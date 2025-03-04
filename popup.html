@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Extensión OBS-SAC</title>
+  <style>
+    /* General body adjustments */
+body {
+  font-family: 'Lato', sans-serif;
+  background-color: #F0F0F0;
+  color: #003366;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  margin: 0;
+  padding: 5px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Popup content container */
+#popup-content {
+  width: 280px;
+  padding: 8px;
+  overflow-y: auto;
+  max-height: 100vh;
+}
+
+/* Main container styling */
+.container {
+  background-color: white;
+  padding: 8px;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  width: 95%;
+  margin-bottom: 8px;
+}
+
+/* Titles */
+h1 {
+  font-size: 12px;
+  margin: 0 0 6px;
+  color: #003366;
+  font-weight: bold;
+}
+
+/* Descriptive text */
+p {
+  font-size: 9px;
+  color: #555;
+  margin-bottom: 6px;
+}
+
+/* Buttons */
+button {
+  background-color: #0072CE;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 2px;
+  font-size: 11px;
+  cursor: pointer;
+  width: 100%;
+  transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* Icon in button */
+button img.icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Icon in button */
+button img.iconMini {
+  width: 5px;
+  height: 5px;
+}
+
+
+/* Button hover effect */
+button:hover:not(:disabled) {
+  background-color: #236ab1;
+}
+
+/* Disabled button styling */
+button:disabled {
+  background-color: #CCCCCC;
+  cursor: not-allowed;
+}
+
+/* Button group layout */
+.button-group {
+  display: flex;
+  flex-direction:row;
+  align-items: center;
+  gap: 3px;
+}
+
+/* Editable text area */
+#selectedInstructions {
+  width: 90%;
+  height: 60px;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 11px;
+  resize: none;
+  font-family: 'Lato', sans-serif;
+}
+
+/* Multiple selection area */
+#instructionSelect {
+  width: 90%;
+  height: 100px;
+  padding: 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: 'Lato', sans-serif;
+}
+
+/* Toggle button style */
+button.toggle-btn {
+  width: 32px;
+  height: 32px;
+  padding: 4px;
+  background-color: #CCCCCC;
+  border: 1px solid #0072CE;
+  border-radius: 50%;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+button.toggle-btn.active {
+  background-color: #0072CE;
+  border-color: #005BB5;
+}
+
+  </style>
+</head>
+
+<body>
+  <div id="popup-content">
+    <!-- Contenedor de Agenda -->
+    <div class="container">
+      <h1>Agenda</h1>
+      <div class="button-group">
+
+        <button id="run-script1" class="toggle-btn" title="Ciclo de la Agenda">
+          <img src="images/ico/calendar--v1.png" alt="Ciclo de la Agenda" class="icon">
+        </button>
+        
+        <button id="run-controlAusentes" class="toggle-btn" title="Buscar Ausentes en citas diarias">
+          <img src="images/ico/icons8-find-user-male-100.png" alt="Buscar Ausentes en citas diarias" class="icon">
+        </button>
+
+             
+        <button id="run-valoraciones" class="toggle-btn" title="Valoraciones">
+          <img src="images\ico\emergency3.png" alt="Valoraciones" class="icon">
+        </button>
+        
+        <button id="SonidoBtn" class="toggle-btn" title="Activar/Desactivar Sonido">
+          <img src="images/ico/icons8-audio-50.png" alt="Activar/Desactivar Sonido" class="icon">
+        </button>
+
+        <button id="ReiniciarPreferenciasBtn" class="toggle-btn" title="Reiniciar Preferencias ">
+          <img src="images/ico/icons8-refresh-64.png" alt="ReiniciarPreferenciasBtn" class="icon">
+        </button>
+
+        </div>
+    </div>
+
+    <!-- Contenedor de Etiquetas -->
+    <div class="container">
+      <h1>Etiquetas</h1>
+      <div class="button-group">
+        <button id="run-script2">
+          <img src="images\ico\icons8-front-desk-48.png" title="Etiquetas Recepción" class="icon">
+       
+        </button>
+        <button id="run-script3">
+          <img src="images/ico/pills.png" title="Etiqueta Medicamento" class="icon">
+          
+        </button>
+        <button id="run-script4">
+          <img src="images/ico/email.png" title="Etiqueta Correo" class="icon">
+          
+        </button>
+        <button id="run-script5">
+          <img src="images/ico/archive.png" title="Etiquetas Archivo" class="icon">
+       
+        </button>
+        
+      </div>
+    </div>
+
+    <!-- Contenedor de Modulab -->
+    <div class="container">
+      <h1>Modulab</h1>
+      <div class="button-group">
+        <button id="run-Modulab1">
+          <img src="images/ico/microscope (1).png" title="Modulab" class="icon">
+          Modulab
+        </button>
+      </div>
+      <div id="infoModulab">Info</div>
+    </div>
+
+    <!-- Contenedor de instrucciones de Medicamentos -->
+    <div class="container">
+      <h1>Instrucciones Medicamentos</h1>
+      <p>Selecciona las instrucciones: <br> Usa la tecla "control" para selección múltiple</p>
+      <select id="instructionSelect" multiple>
+        <option value=" -Tomar 1 tableta cada 8 horas.">Tomar 1 tableta cada 8 horas</option>
+        <option value=" -Aplicar crema en la zona afectada dos veces al día.">Aplicar crema en la zona afectada dos veces al día</option>
+        <option value=" -Tomar en ayunas con un vaso de agua.">Tomar en ayunas con un vaso de agua</option>
+        <option value=" -No exceder la dosis recomendada.">No exceder la dosis recomendada</option>
+        <option value=" -Usar por 7 días consecutivos.">Usar por 7 días consecutivos</option>
+        <option value=" -Suspender uso si hay irritación.">Suspender uso si hay irritación</option>
+      </select>
+      <textarea id="selectedInstructions" placeholder="Instrucciones..."></textarea>
+      <div id="VersionSpace"></div>
+    </div>
+  </div>
+  <div style="display: none" id="error-message">
+    <h2>Extensión no disponible en este sitio.</h2>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>

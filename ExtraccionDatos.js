@@ -34,7 +34,7 @@ async function extractIdentificationData() {
 function extraerDatosDeExpediente(container) {
   const fullName = container.querySelector('.card-label.font-weight-bold.text-dark-75')?.textContent.trim();
   const nameParts = fullName.split(' ');
-  const firstName = nameParts.slice(2).join(' ');
+  const firstName = nameParts.slice(2).join(' '); 
   const lastName = nameParts.slice(0, 2).join(' ').split(" ");
   const identification = container.querySelector('.d-flex.align-items-center.justify-content-between span.text-muted')?.textContent.trim();
   const dobText = container.querySelectorAll('[class="text-muted"]');
@@ -79,8 +79,8 @@ function extraerDatosDeAgenda(popoverContainer) {
 
   return {
     firstSurname: fullName2,
-    secondSurname: apellidos[0],
-    firstName: apellidos[1],
+    secondSurname: apellidos[1],
+    firstName: apellidos[0],
     patientID: id,
     identityCard: studentCard,
     birthDate: dobitrhday,

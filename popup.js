@@ -27,7 +27,8 @@
       "https://www.saludaunclick.com/ucr",
       "https://lab.lcucr.com:8443",
       "https://10.226.23.18:8443/",
-      "https://lcbsucr.obs.ucr.ac.cr/"
+      "https://lcbsucr.obs.ucr.ac.cr/",
+      "https://lab.lcucr.com"
     ];
 
     if (allowedUrls.some(url => activeUrl.includes(url))) {
@@ -66,7 +67,7 @@
 
   btnvaloraciones.addEventListener("click", () => toggleAndExecute(btnvaloraciones, "valoracionesAlertRefresh", 'Valoraciones', 'activo'));
 
-  runButton2.addEventListener("click", () => sendMessageWithArgs("agregarBotonATabla", ["Recepcion", "Sin indicaciones especiales"]));
+  runButton2.addEventListener("click", () => sendMessageWithArgs("agregarBotonATabla", ["Recepcion",TextoDeIndicaciones.value]));
   runButton3.addEventListener("click", () => {
     const text = getSelectedInstructions();
     sendMessageWithArgs("agregarBotonATabla", ["Medicamento", text]);

@@ -116,11 +116,11 @@ function agregarBotonATabla(tipo,detalle) {
       
       <table>
           <tr>
-              <td><strong></strong></td>
+               <td><strong> ${detalle} </strong></td>
       
           </tr>
           <tr>
-           <td><strong>Cédula: ${cedula}</strong></td>
+           <td><strong>Identificación: ${cedula}</strong></td>
    
        </tr>
        <tr>
@@ -163,7 +163,7 @@ function agregarBotonATabla(tipo,detalle) {
         <body>
             <table>
                 <tr>
-                    <td><strong>Cédula: ${cedula} </strong> </td> <td>Fecha: ${ fechaActual }</td>
+                    <td><strong>Identificación: ${cedula} </strong> </td> <td>Fecha: ${ fechaActual }</td>
                     
                 </tr>
                 <tr>
@@ -210,7 +210,7 @@ function agregarBotonATabla(tipo,detalle) {
                 
              </tr>
              <tr>
-                 <td>Cédula: ${cedula}</td>
+                 <td>Identificación: ${cedula}</td>
                
              </tr>
                  <tr>

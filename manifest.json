@@ -3,7 +3,7 @@
   "name": "Ext Gestión SAC-UCR",
   "author": "Marcos Ortega",
   "description": "Extensión para el personal del Área de USS,  / **/ Funciones: actualiza cada 2 minutos la agenda en pantalla, Avisa si un paciente de la agenda se presentó y avisa cuando se presentó tarde (5 minutos de margen), genera etiquetas para recepción, farmacia y archivo, tranfiere datos de una aenda en pantalla a modulab",
-  "version": "7.1.0",
+  "version": "7.1.1",
   "permissions": [
     "activeTab",
     "scripting",

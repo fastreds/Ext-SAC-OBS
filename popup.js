@@ -19,25 +19,38 @@
   const manifestData = chrome.runtime.getManifest();
   versionSpace.textContent = `${manifestData.name} - Versión: ${manifestData.version}`;
 
-  // Comprobar la URL activa de la pestaña
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    const activeTab = tabs[0];
-    const activeUrl = activeTab.url;
-    const allowedUrls = [
-      "https://www.saludaunclick.com/ucr",
-      "https://lab.lcucr.com:8443",
-      "https://10.226.23.18:8443/",
-      "https://lcbsucr.obs.ucr.ac.cr/",
-      "https://lab.lcucr.com"
-    ];
+  
 
-    if (allowedUrls.some(url => activeUrl.includes(url))) {
-      document.getElementById('popup-content').style.display = 'block';
-    } else {
-      document.getElementById('popup-content').style.display = 'none';
-      document.getElementById('error-message').style.display = 'block';
-    }
+
+
+//////////////////////////////// Mostrar u ocultar el contenido en función de la URL permitida se lee desde manifest////////////////////////
+// Comprobar la URL activa de la pestaña
+chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+  const activeTab = tabs[0];
+  const activeUrl = activeTab.url;
+
+  // Obtener las URL permitidas desde el manifiesto
+  const allowedUrls = manifestData.host_permissions;
+  console.log(allowedUrls);
+
+  // Comprobar si la URL activa coincide con alguna URL permitida utilizando expresiones regulares
+  const isAllowed = allowedUrls.some(url => {
+    // Convierte el comodín '*' en una expresión regular
+    const regex = new RegExp(url.replace('*', '.*'));
+    return regex.test(activeUrl);
   });
+
+  // Mostrar u ocultar el contenido en función de la URL
+  if (isAllowed) {
+    document.getElementById('popup-content').style.display = 'block';
+    document.getElementById('error-message').style.display = 'none';
+  } else {
+    document.getElementById('popup-content').style.display = 'none';
+    document.getElementById('error-message').style.display = 'block';
+  }
+});
+  
+
 
   // Función para alternar estado de botones
   function toggleButton(button, setState = null) {
@@ -60,6 +73,7 @@
   setInitialState(runButton7, 'BuscarAusentes', 'activo');
   setInitialState(SonidoBtn, 'sonidoAlerta', 'activo');
   setInitialState(btnvaloraciones, 'Valoraciones', 'activo');
+  let text;
 
     // Funciones específicas para cada botón
   runButton1.addEventListener("click", () => toggleAndExecute(runButton1, "popupCicloDeAgenda", 'agenda', 'activo'));
@@ -67,9 +81,12 @@
 
   btnvaloraciones.addEventListener("click", () => toggleAndExecute(btnvaloraciones, "valoracionesAlertRefresh", 'Valoraciones', 'activo'));
 
-  runButton2.addEventListener("click", () => sendMessageWithArgs("agregarBotonATabla", ["Recepcion",TextoDeIndicaciones.value]));
+  runButton2.addEventListener("click", () => {
+    text = getSelectedInstructions();
+    sendMessageWithArgs("agregarBotonATabla", ["Recepcion", text]);
+  });
   runButton3.addEventListener("click", () => {
-    const text = getSelectedInstructions();
+    text = getSelectedInstructions();
     sendMessageWithArgs("agregarBotonATabla", ["Medicamento", text]);
   });
   runButton4.addEventListener("click", () => sendMessageWithArgs("agregarBotonATabla", ["Correo", TextoDeIndicaciones.value]));
@@ -132,10 +149,11 @@ runButton6.addEventListener("click",
   }
 
   function getSelectedInstructions() {
-    let text = " " + TextoDeIndicaciones.value;
+    let text = " ";
     for (const option of instructionSelect.options) {
       if (option.selected) text += option.value;
     }
+    text += TextoDeIndicaciones.value;
     return text;
   }
 

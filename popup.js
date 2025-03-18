@@ -51,6 +51,10 @@ chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
 });
   
 
+document.getElementById("btnAbrir").addEventListener("click", () => {
+  chrome.tabs.create({ url: chrome.runtime.getURL("gestionDeIncidentes.html") });
+});
+
 
   // Función para alternar estado de botones
   function toggleButton(button, setState = null) {

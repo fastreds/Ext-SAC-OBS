@@ -1,0 +1,34 @@
+.form-container {
+    display: flex;
+    height: 100vh;
+}
+.form-container #DashBoard {
+    width: 70%;
+    height: 100%;
+    padding: 20px;
+    overflow-y: auto;
+    background-color: #f8f9fa;
+}
+.form-container form {
+    width: 30%;
+    padding: 20px;
+    overflow-y: auto;
+}
+.postit {
+    background-color: #a2cdf2;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+.postit .actions {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+}
+.postit .edit-btn, .postit .delete-btn {
+    display: inline-block;
+    margin-left: 5px;
+    cursor: pointer;
+}

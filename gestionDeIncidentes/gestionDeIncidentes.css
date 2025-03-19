@@ -1,34 +1,99 @@
+/* Contenedor principal */
 .form-container {
     display: flex;
     height: 100vh;
 }
+
+/* Panel del formulario */
 .form-container #DashBoard {
     width: 70%;
     height: 100%;
-    padding: 20px;
+    padding: 10px; /* Reducir el padding */
     overflow-y: auto;
     background-color: #f8f9fa;
 }
+
+/* Formulario */
 .form-container form {
     width: 30%;
-    padding: 20px;
+    padding: 10px; /* Reducir el padding */
     overflow-y: auto;
 }
-.postit {
-    background-color: #a2cdf2;
-    padding: 15px;
-    margin-bottom: 10px;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    position: relative;
+
+/* Estilos para los grupos de formulario */
+.form-group {
+    margin-bottom: 8px; /* Reducir el margen inferior */
 }
-.postit .actions {
-    position: absolute;
-    top: 5px;
-    right: 5px;
+
+/* Etiquetas */
+.form-group label {
+    display: block;
+    font-size: 12px; /* Reducir el tamaño de la fuente */
+    font-weight: bold;
+    margin-bottom: 4px; /* Reducir el margen inferior */
+    color: #333;
 }
-.postit .edit-btn, .postit .delete-btn {
-    display: inline-block;
-    margin-left: 5px;
-    cursor: pointer;
+
+/* Campos de entrada */
+.form-group input[type="time"] {
+    width: 100%;
+    padding: 6px; /* Reducir el padding */
+    font-size: 12px; /* Reducir el tamaño de la fuente */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
 }
+
+/* Diseño en cuadrícula para los campos */
+.form-container form {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Dos columnas */
+    gap: 10px; /* Espacio entre elementos */
+}
+
+/* Ajustar el ancho de los campos en la cuadrícula */
+.form-group {
+    grid-column: span 2; /* Cada campo ocupa una columna */
+}
+    .postit {
+        background-color: #a2cdf2;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        position: relative;
+    }
+    .postit .actions {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+    }
+    .postit .copy-btn, .postit .edit-btn, .postit .delete-btn {
+        display: inline-block;
+        margin-left: 5px;
+
+    }
+    .postit .copy-btn img {
+
+        color: #28a745;
+    
+    }
+    .postit .edit-btn {
+        color: #007bff;
+    }
+    .postit .delete-btn {
+        color: #dc3545;
+    }
+    img {
+      
+        width: 25px;
+        height: 25px;
+        cursor: pointer;
+      }
+
+
+    .resaltar-campo {
+        background-color: #ffff99; /* Fondo amarillo */
+        border: 2px solid #ffcc00; /* Borde naranja */
+        transition: background-color 0.5s, border 0.5s; /* Transición suave */
+    }

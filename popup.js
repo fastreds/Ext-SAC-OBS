@@ -49,11 +49,15 @@ chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     document.getElementById('error-message').style.display = 'block';
   }
 });
-  
 
+
+  
+/////////////// bt que abre la gestion de incidentes  //////
 document.getElementById("btnAbrir").addEventListener("click", () => {
   chrome.tabs.create({ url: chrome.runtime.getURL("gestionDeIncidentes.html") });
 });
+
+
 
 
   // Función para alternar estado de botones

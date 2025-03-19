@@ -15,8 +15,20 @@
             <!-- Campos básicos -->
             <div class="form-group">
                 <label for="informacion_incidente">Información del Incidente</label>
-                <textarea class="form-control" id="informacion_incidente" rows="4"></textarea>
+                <textarea class="form-control" id="informacion_incidente" rows="6">
+                </textarea>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="insertarTextoCheckbox"> Insertar información predeterminada
+                    </label>
+                </div>
             </div>
+            
+            <!-- Botones -->
+            <button type="button" class="btn btn-secondary" id="nuevoIncidente">Nuevo Incidente</button>
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <br>
+            
             <div class="form-group">
                 <label for="unidad_amb">Unidad Ambulancia</label>
                 <select class="form-control" id="unidad_amb">
@@ -27,63 +39,62 @@
             <div class="form-group">
                 <label for="despachador">Despachador</label>
                 <select  class="form-control" id="despachador">
-                <option value=""></option>
                 <option value="3">4911</option>
                 <option value="1">Presencial</option>
                 <option value="4">Vía telefónica</option>
                 </select>
             </div>
+            
             <div class="form-group">
                 <label for="tipo_caso">Tipo de Caso</label>
-                <select class="form-control" id="tipo_caso">  <option value=""></option><option value="531">Accidente Acuático( 531 )</option><option value="526">Alteración de la Conducta( 526 )</option><option value="523">Alteración de la Presión Arterial( 523 )</option><option value="535">Atropello( 535 )</option><option value="536">Colisión( 536 )</option><option value="529">Crisis Convulsiva( 529 )</option><option value="528">Emergencia Gineco-Obstétrica( 528 )</option><option value="524">Evento Vascular Cerebral( 524 )</option><option value="527">Intoxicación-Anafilaxia( 527 )</option><option value="532">Lesiones Causadas por Animales( 532 )</option><option value="534">Lesiones Causadas por Electricidad( 534 )</option><option value="522">Paro Cardio-Respiratorio( 522 )</option><option value="525">Persona Diabética( 525 )</option><option value="521">Problemas Cardíacos( 521 )</option><option value="533">Quemaduras( 533 )</option> </select>
-                
+                <select name="tipo_caso" id="tipo_caso" class="bs-select form-control   social_information " title="Tipo de caso">
+                    <option value=""></option><option value="531">Accidente Acuático( 531 )</option><option value="526">Alteración de la Conducta( 526 )</option><option value="523">Alteración de la Presión Arterial( 523 )</option><option value="535">Atropello( 535 )</option><option value="542">Caída-Precipitación( 542 )</option><option value="536">Colisión( 536 )</option><option value="529">Crisis Convulsiva( 529 )</option><option value="528">Emergencia Gineco-Obstétrica( 528 )</option><option value="524">Evento Vascular Cerebral( 524 )</option><option value="527">Intoxicación-Anafilaxia( 527 )</option><option value="532">Lesiones Causadas por Animales( 532 )</option><option value="534">Lesiones Causadas por Electricidad( 534 )</option><option value="522">Paro Cardio-Respiratorio( 522 )</option><option value="539">Persona Atrapada-Prensada( 539 )</option><option value="525">Persona Diabética( 525 )</option><option value="541">Persona Inconsciente( 541 )</option><option value="521">Problemas Cardíacos( 521 )</option><option value="520">Problemas Respiratorios( 520 )</option><option value="533">Quemaduras( 533 )</option><option value="544">Traslados Intrahospitalarios( 544 )</option><option value="550">Urgencia Médica( 550 )</option><option value="540">Urgencia Traumática( 540 )</option><option value="579">Urgencias Mentales( 579 )</option><option value="537">Vuelco( 537 )</option>                                            </select>
             </div>
 
             <!-- Horarios -->
             <div class="form-group">
-                <label for="hora_despacho">Hora Despacho</label>
+                <label for="hora_despacho">1. Hora Despacho</label>
                 <input type="time" class="form-control" id="hora_despacho">
             </div>
             <div class="form-group">
-                <label for="hora_salida">Hora Salida</label>
+                <label for="hora_salida">2. Hora Salida</label>
                 <input type="time" class="form-control" id="hora_salida">
             </div>
             <div class="form-group">
-                <label for="llegada_allugar">Llegada al Lugar</label>
+                <label for="llegada_allugar">3. Llegada al Lugar</label>
                 <input type="time" class="form-control" id="llegada_allugar">
             </div>
             <div class="form-group">
-                <label for="llegada_alpaciente">Llegada al Paciente</label>
+                <label for="llegada_alpaciente">4. Llegada al Paciente</label>
                 <input type="time" class="form-control" id="llegada_alpaciente">
             </div>
             <div class="form-group">
-                <label for="retiro_escena">Retiro de Escena</label>
+                <label for="retiro_escena">5. Retiro de Escena</label>
                 <input type="time" class="form-control" id="retiro_escena">
             </div>
             <div class="form-group">
-                <label for="llegada_centro_medico">Llegada al Centro Médico</label>
+                <label for="llegada_centro_medico">6. Llegada al Centro Médico</label>
                 <input type="time" class="form-control" id="llegada_centro_medico">
             </div>
             <div class="form-group">
-                <label for="retiro_centro_medico">Retiro del Centro Médico</label>
+                <label for="retiro_centro_medico">7. Retiro del Centro Médico</label>
                 <input type="time" class="form-control" id="retiro_centro_medico">
             </div>
             <div class="form-group">
-                <label for="llegada_estacion">Llegada a la Estación</label>
+                <label for="llegada_estacion">8.Llegada a la Estación</label>
                 <input type="time" class="form-control" id="llegada_estacion">
             </div>
             <div class="form-group">
-                <label for="hora_disponible">Hora Disponible</label>
+                <label for="hora_disponible">9. Hora Disponible</label>
                 <input type="time" class="form-control" id="hora_disponible">
             </div>
 
             <!-- Jornada -->
             <fieldset data-role="controlgroup" data-type="horizontal" id="jornada_val">
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<legend id="jornada_val_text">Jornada<span class="required" aria-required="true"> * </span></legend>
+               <legend id="jornada_val_text">Jornada</legend>
                         <input type="radio" name="jornada" class="form-filter" id="jornada-1" value="1" title="Diurno"><label style="margin-right:15px;" for="jornada-1">Diurno</label>
                         <input type="radio" name="jornada" class="form-filter" id="jornada-2" value="2" title="Mixto"><label style="margin-right:15px;" for="jornada-2">Mixto</label>
-                        <input type="radio" name="jornada" class="form-filter" id="jornada-3" value="3" title="Fines de semana"><label style="margin-right:15px;" for="jornada-3">Fines de semana</label>
-                &nbsp;&nbsp;&nbsp;&nbsp;</fieldset>
+                 </fieldset>
 
             <!-- Tripulación -->
             <div class="form-group">
@@ -116,9 +127,6 @@
                 </div>
             </div>
 
-            <!-- Botones -->
-            <button type="button" class="btn btn-secondary" id="nuevoIncidente">Nuevo Incidente</button>
-            <button type="submit" class="btn btn-primary">Guardar</button>
         </form>
     </div>
 

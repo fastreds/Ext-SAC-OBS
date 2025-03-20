@@ -135,6 +135,7 @@ function editarIncidente(index) {
     $('#tripulante_4').val(incidente.tripulante_4);
 
     $(`input[name="categoria_salida"][value="${incidente.categoria_salida}"]`).prop('checked', true);
+    $(`input[name="categoria_manejo"][value="${incidente.categoria_manejo}"]`).prop('checked', true); // categoria_manejo
 
     // Guardar el índice del incidente que se está editando
     $('#dataForm').data('editIndex', index);
@@ -177,7 +178,8 @@ $('#dataForm').submit(function (event) {
 
         tripulante_4: $('#tripulante_4').val(),
 
-        categoria_salida: $('input[name="categoria_salida"]:checked').val()
+        categoria_salida: $('input[name="categoria_salida"]:checked').val(),
+        categoria_manejo: $('input[name="categoria_manejo"]:checked').val()
     };
 
     // Verificar si se está editando un incidente

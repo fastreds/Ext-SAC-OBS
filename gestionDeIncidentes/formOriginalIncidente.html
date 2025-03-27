@@ -1,1043 +1,640 @@
-<div class="portlet box btn-light-success">
-    <div class="portlet-title">
-        <div class="caption">
-            <i class="icon-user-md"></i>Información del incidente
-        </div>
-    </div>
+<form role="form" class="form-horizontal" id="atencion_medica_extra_form" name="atencion_medica_extra_form">
+    <input type="hidden" name="drug_type" id="drug_type" value="catalog">
+    <div class="portlet box btn-light-success">
+        <div class="portlet-title">
+            <div class="caption">
+                    <i class="icon-user-md"></i>Información del incidente                     </div>
+        </div>  
 
-    <div class="portlet-body">
+        <div class="portlet-body">  
 
-
-        <script>
-            function showselect(pshow, phide) {
-                document.getElementById(pshow).style.display = 'block';
-                document.getElementById(phide).style.display = 'none';
-            }
-        </script>
-
-        <div class="tabbable-custom">
-            <div class="col-md-12" style="border: solid 1px #ccc;">
-
-                <div class="col-md-12" style="padding-bottom:15px; ">
-                    <div class="form-group">
-                        <label style="text-align: left;" class="col-md-12 control-label">
-                            <h3>Información del incidente</h3>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="row">
-
-                    <!--<div class="col-md-4" style="padding-bottom:15px; ">
-                                    <div class="form-group">
-                                        <label style="text-align: left;" class="col-md-4 control-label"><p>Fecha:</p>
-                                        </label>
-                                        <div class="col-md-8">
-
-                                            <input type='text' size='14' name='fecha_form' id='fecha_form' style='border: 1px solid #c2cad8;border-radius: 4px;height: 34px;padding: 5px 4px !important;' value='' />
-
-                                        </div>
-                                    </div>
-                                </div>-->
-
-                    <div class="col-md-6" style="padding-bottom:15px; ">
-                        <div class="form-group">
-                            <label style="text-align: left;" class="col-md-4 control-label">
-                                <p>Consecutivo: <span class="required" aria-required="true"> * </span></p>
-                            </label>
-                            <div class="col-md-8">
-
-                                <input type="text" size="14" name="consecutivo" id="consecutivo"
-                                    style="border: 1px solid #c2cad8;border-radius: 4px;padding: 5px 4px !important; width: 100%;"
-                                    value="EX-3691" disabled="">
-
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6" style="padding-bottom:15px; ">
-                        <div class="form-group">
-                            <label style="text-align: left;" class="col-md-4 control-label">
-                                <p>Unidad: <span class="required" aria-required="true"> * </span></p>
-                            </label>
-                            <div class="col-md-8">
-
-                                <input type="text" size="14" name="unidad_amb" id="unidad_amb"
-                                    style="border: 1px solid #c2cad8;border-radius: 4px;padding: 5px 4px !important; width: 100%;"
-                                    value="">
-
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <div class="row">
-
-                    <div class="col-md-6" style="padding-bottom:15px; ">
-                        <div class="form-group">
-                            <label style="text-align: left;" class="col-md-4 control-label">
-                                <p>Despachador: <span class="required" aria-required="true"> * </span></p>
-                            </label>
-                            <div class="col-md-8">
-
-                                <select name="despachador" id="despachador"
-                                    class="bs-select form-control   social_information " title="Despachador">
-                                    <option value=""></option>
-                                    <option value="3">4911</option>
-                                    <option value="1">Presencial</option>
-                                    <option value="4">Vía telefónica</option>
-                                </select>
-
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6" style="padding-bottom:15px; ">
-                        <div class="form-group">
-                            <label style="text-align: left;" class="col-md-4 control-label">
-                                <p>Tipo de caso: <span class="required" aria-required="true"> * </span></p>
-                            </label>
-                            <div class="col-md-8">
-
-                                <select name="tipo_caso" id="tipo_caso"
-                                    class="bs-select form-control   social_information " title="Tipo de caso">
-                                    <option value=""></option>
-                                    <option value="531">Accidente Acuático( 531 )</option>
-                                    <option value="526">Alteración de la Conducta( 526 )</option>
-                                    <option value="523">Alteración de la Presión Arterial( 523 )</option>
-                                    <option value="535">Atropello( 535 )</option>
-                                    <option value="536">Colisión( 536 )</option>
-                                    <option value="529">Crisis Convulsiva( 529 )</option>
-                                    <option value="528">Emergencia Gineco-Obstétrica( 528 )</option>
-                                    <option value="524">Evento Vascular Cerebral( 524 )</option>
-                                    <option value="527">Intoxicación-Anafilaxia( 527 )</option>
-                                    <option value="532">Lesiones Causadas por Animales( 532 )</option>
-                                    <option value="534">Lesiones Causadas por Electricidad( 534 )</option>
-                                    <option value="522">Paro Cardio-Respiratorio( 522 )</option>
-                                    <option value="525">Persona Diabética( 525 )</option>
-                                    <option value="521">Problemas Cardíacos( 521 )</option>
-                                    <option value="533">Quemaduras( 533 )</option>
-                                </select>
-
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <div class="row">
-
-                    <div class="col-md-6" style="padding-bottom:15px; ">
-                        <div class="form-group">
-                            <label style="text-align: left;" class="col-md-4 control-label">
-                                <p>Lugar de la atención: <span class="required" aria-required="true"> * </span></p>
-                            </label>
-                            <div class="col-md-8">
-
-                                <div class="select2-container bs-select form-control social_information"
-                                    id="s2id_lugar_atencion" title="Lugar atencion"><a href="javascript:void(0)"
-                                        class="select2-choice select2-default" tabindex="-1"> <span
-                                            class="select2-chosen" id="select2-chosen-4"></span><abbr
-                                            class="select2-search-choice-close"></abbr> <span class="select2-arrow"
-                                            role="presentation"><b role="presentation"></b></span></a><label
-                                        for="s2id_autogen4" class="select2-offscreen"></label><input
-                                        class="select2-focusser select2-offscreen" type="text" aria-haspopup="true"
-                                        role="button" aria-labelledby="select2-chosen-4" id="s2id_autogen4">
-                                    <div class="select2-drop select2-display-none select2-with-searchbox">
-                                        <div class="select2-search"> <label for="s2id_autogen4_search"
-                                                class="select2-offscreen"></label> <input type="text" autocomplete="off"
-                                                autocorrect="off" autocapitalize="off" spellcheck="false"
-                                                class="select2-input" role="combobox" aria-expanded="true"
-                                                aria-autocomplete="list" aria-owns="select2-results-4"
-                                                id="s2id_autogen4_search" placeholder=""> </div>
-                                        <ul class="select2-results" role="listbox" id="select2-results-4"> </ul>
-                                    </div>
-                                </div><select name="lugar_atencion" id="lugar_atencion"
-                                    class="bs-select form-control   social_information  select2-offscreen"
-                                    title="Lugar atencion" tabindex="-1">
-                                    <option value=""></option>
-                                    <option value="47">ANFITEATRO FINCA 1</option>
-                                    <option value="53">ÁREA VERDE AL LADO CANCHA DERECHO</option>
-                                    <option value="95">AUDITORIO DE AULA MAGNA</option>
-                                    <option value="50">AUDITORIO DETRÁS EDIFICIO DERECHO</option>
-                                    <option value="90">AUDITORIO LANAMME</option>
-                                    <option value="94">AULA MAGNA</option>
-                                    <option value="113">AUROL</option>
-                                    <option value="54">BIBLIOTECA LUIS DEMETRIO TINOCO</option>
-                                    <option value="107">CANCHA FOOTBALL</option>
-                                    <option value="51">CANCHA FOOTBALL DE DERECHO</option>
-                                    <option value="49">CASETA DE SEGURIDAD FRENTE OEPI</option>
-                                    <option value="52">CASETA DE SEGURIDAD INGRESO DERECHO</option>
-                                    <option value="99">CASETA SEGURIDAD INGRESO CIENCIAS SOCIALES</option>
-                                    <option value="118">CASETA SEGURIDAD INGRESO INSTALACIONES DEPORTIVAS </option>
-                                    <option value="89">CASETA SEGURIDAD INGRESO LANAMME</option>
-                                    <option value="102">CENTRO DE INVESTIGACIÓN EN CIENCIAS ATÓMICAS NUCLEARES Y
-                                        MOLECULARES (CICANUM)</option>
-                                    <option value="103">CENTRO DE INVESTIGACIÓN EN MATEMÁTICA PURA Y APLICADA (CIMPA)
-                                    </option>
-                                    <option value="79">Centro de Investigaciones Agronómicas (CIA)</option>
-                                    <option value="84">CENTRO DE INVESTIGACIONES EN BIOLOGÍA CELULAR Y MOLECULAR (CIBCM)
-                                    </option>
-                                    <option value="86">CENTRO DE INVESTIGACIONES EN CIENCIAS DEL MAR Y LIMNOLOGÍA
-                                        (CIMAR)</option>
-                                    <option value="100">CENTRO DE INVESTIGACIONES EN ELECTROQUÍMICA Y ENERGÍA QUÍMICA
-                                        (CELEQ)</option>
-                                    <option value="85">CENTRO DE INVESTIGACIONES EN PRODUCTOS NATURALES (CIPRONA)
-                                    </option>
-                                    <option value="76">Centro para Investigaciones en Granos y Semillas (CIGRAS)
-                                    </option>
-                                    <option value="73">CONSULTORIOS JURÍDICOS</option>
-                                    <option value="46">EDIFICIO ADMINISTRATIVO A</option>
-                                    <option value="45">EDIFICIO ADMINISTRATIVO B</option>
-                                    <option value="110">EDIFICIO ADMINISTRATIVO PISCINAS</option>
-                                    <option value="57">EDIFICIO CANAL UCR</option>
-                                    <option value="34">EDIFICIO DE AGENCIA UNIVERSITARIA PARA LA GESTIÓN DE
-                                        EMPRENDIMIENTO (AUGE)</option>
-                                    <option value="2">EDIFICIO DE AGRONOMÍA (AG)</option>
-                                    <option value="5">EDIFICIO DE ARQUITECTURA (AQ)</option>
-                                    <option value="1">EDIFICIO DE ARTES DRAMÁTICAS (AD)</option>
-                                    <option value="3">EDIFICIO DE ARTES MUSICALES (AM)</option>
-                                    <option value="4">EDIFICIO DE ARTES PLÁSTICAS (AP)</option>
-                                    <option value="6">EDIFICIO DE AULAS (AU)</option>
-                                    <option value="63">EDIFICIO DE BIBLIOTECOLOGÍA Y CIENCIAS DE LA INFORMACIÓN</option>
-                                    <option value="8">EDIFICIO DE BIOLOGÍA (BI)</option>
-                                    <option value="9">EDIFICIO DE CIENCIAS ECONÓMICAS (CE)</option>
-                                    <option value="74">EDIFICIO DE CONTROL GENERAL DE SEGURIDAD Y TRÁNSITO</option>
-                                    <option value="106">EDIFICIO DE DE EDUCACIÓN FÍSICA Y DEPORTE</option>
-                                    <option value="11">EDIFICIO DE DERECHO (DE)</option>
-                                    <option value="12">EDIFICIO DE EDUCACIÓN (ED)</option>
-                                    <option value="14">EDIFICIO DE EDUCACIÓN FÍSICA (EF)</option>
-                                    <option value="13">EDIFICIO DE ENFERMERÍA (EF)</option>
-                                    <option value="15">EDIFICIO DE ESTUDIOS GENERALES (EG)</option>
-                                    <option value="18">EDIFICIO DE FACULTAD DE CIENCIAS BÁSICAS (FC)</option>
-                                    <option value="17">EDIFICIO DE FARMACIA (FA)</option>
-                                    <option value="19">EDIFICIO DE FÍSICO MATEMÁTICA (FM)</option>
-                                    <option value="22">EDIFICIO DE INFORMÁTICA</option>
-                                    <option value="23">EDIFICIO DE INGENIERÍA</option>
-                                    <option value="21">EDIFICIO DE INGENIERÍA ELÉCTRICA (IE)</option>
-                                    <option value="66">EDIFICIO DE LA BIBLIOTECA MEDICINA</option>
-                                    <option value="98">EDIFICIO DE LA CASA INFANTIL UNIVERSITARIA CIU</option>
-                                    <option value="44">EDIFICIO DE LA CONTRALORÍA UNIVERSITARIA</option>
-                                    <option value="71">EDIFICIO DE LA EDITORIAL</option>
-                                    <option value="36">EDIFICIO DE LA FUNDACIÓN DE LA UNIVERSIDAD DE COSTA RICA
-                                        (FUNDEVI)</option>
-                                    <option value="41">EDIFICIO DE LA JUNTA ADMINISTRADORA DE FONDOS DE AHORRO Y
-                                        PRÉSTAMO (JAFAP)</option>
-                                    <option value="59">EDIFICIO DE LA OFICINA DE BIENESTAR Y SALUD (OBS)</option>
-                                    <option value="48">EDIFICIO DE LA OFICINA EJECUTORA DE PROGRAMAS DE INVERSIONES
-                                        (OEPI)</option>
-                                    <option value="37">EDIFICIO DE LA OFICINA JURÍDICA</option>
-                                    <option value="39">EDIFICIO DE LA UNIDAD DE APOYO A LA DOCENCIA MEDIADA CON LA
-                                        TECNOLOGÍA A LA INFORMACIÓN Y COMUNICACIÓN (METICS)</option>
-                                    <option value="24">EDIFICIO DE LETRAS</option>
-                                    <option value="25">EDIFICIO DE MEDICINA</option>
-                                    <option value="26">EDIFICIO DE MICROBIOLOGÍA</option>
-                                    <option value="27">EDIFICIO DE NUTRICIÓN</option>
-                                    <option value="28">EDIFICIO DE ODONTOLOGÍA</option>
-                                    <option value="29">EDIFICIO DE QUÍMICA</option>
-                                    <option value="30">EDIFICIO DE SALUD PÚBLICA</option>
-                                    <option value="31">EDIFICIO DE TECNOLOGÍA DE ALIMENTOS (TA)</option>
-                                    <option value="62">EDIFICIO DE TECNOLOGÍA EN SALUD</option>
-                                    <option value="32">EDIFICIO DE TECNOLOGÍAS EN SALUD (TS)</option>
-                                    <option value="65">EDIFICIO DEL ANTIGUO ODONTOLOGÍA</option>
-                                    <option value="87">EDIFICIO DEL AUDITORIO CIMAR</option>
-                                    <option value="81">EDIFICIO DEL CENTRO DE DIAGNÓSTICO PARA EL CÁNCER Y CIRUGÍA
-                                        MÍNIMAMENTE INVASIVA</option>
-                                    <option value="83">EDIFICIO DEL CENTRO DE INVESTIGACIÓN EN CIENCIA E INGENIERÍA DE
-                                        MATERIALES (CICIMA)</option>
-                                    <option value="75">EDIFICIO DEL CENTRO DE INVESTIGACIÓN EN TECNOLOGÍA DE ALIMENTOS
-                                        (CITA)</option>
-                                    <option value="67">EDIFICIO DEL CENTRO DE INVESTIGACIONES EN CONTAMINACIÓN AMBIENTAL
-                                        (CICA)</option>
-                                    <option value="82">EDIFICIO DEL CENTRO DE INVESTIGACIONES EN ESTRUCTURA
-                                        MICROSCOPICAS CIEMIC</option>
-                                    <option value="64">EDIFICIO DEL CENTRO INVESTIGACIONES EN CIENCIAS GEOLÓGICAS
-                                    </option>
-                                    <option value="61">EDIFICIO DEL COMEDOR UNIVERSITARIO </option>
-                                    <option value="40">EDIFICIO DEL DOCTORADO EN GOBIERNO Y POLÍTICAS PÚBLICAS (DGPP)
-                                    </option>
-                                    <option value="55">EDIFICIO DEL INSTITUTO CONFUCIO</option>
-                                    <option value="78">EDIFICIO DEL INSTITUTO DE INVESTIGACIONES EN SALUD (INISA)
-                                    </option>
-                                    <option value="80">EDIFICIO DEL INSTITUTO INVESTIGACIONES EN NUTRICIÓN (CINA)
-                                    </option>
-                                    <option value="68">EDIFICIO DEL LABORATORIO DE ENSAYOS BIOLÓGICOS (LEBI)</option>
-                                    <option value="91">EDIFICIO DEL LANAMME</option>
-                                    <option value="93">EDIFICIO DEL PLANETARIO</option>
-                                    <option value="35">EDIFICIO DEL PROGRAMA INTEGRAL DE LA PERSONA ADULTA MAYOR (PIAM)
-                                    </option>
-                                    <option value="72">EDIFICIO DEL SISTEMA DE ESTUDIOS DE POSGRADO (SEP)</option>
-                                    <option value="92">EDIFICIO EDUCACIÓN CONTINUA</option>
-                                    <option value="88">EDIFICIO PARQUEOS FRENTE CIMAR</option>
-                                    <option value="58">EDIFICIO RADIOEMISORAS UCR</option>
-                                    <option value="16">EDIFICIO SAPRISSA (ES)</option>
-                                    <option value="56">EDIFICIO SEMANARIO UNIVERSIDAD</option>
-                                    <option value="10">EDIFICIOS DE CIENCIAS SOCIALES (CS)</option>
-                                    <option value="7">EDIFICO DE BELLAS ARTES (BA)</option>
-                                    <option value="20">EDIFICO DE GEOLOGÍA (GE)</option>
-                                    <option value="38">EDIFICO DEL CENTRO CENTROAMERICANO DE POBLACIÓN (CCP)</option>
-                                    <option value="117">EDIFICO DEL CENTRO DE INVESTIGACIÓN Y CAPACITACIÓN EN
-                                        ADMINISTRACIÓN PÚBLICA (CICAP)</option>
-                                    <option value="108">ESTADIO DEL ECOLÓGICO </option>
-                                    <option value="116">FUERA INSTALACIONES DE CAMPUS UNIVERSITARIO </option>
-                                    <option value="104">GIMNASIO 1 INSTALACIONES DEPORTIVAS</option>
-                                    <option value="105">GIMNASIO2 INSTALACIONES DEPORTIVAS</option>
-                                    <option value="101">INSTITUTO DE INVESTIGACIÓN EDUCACIÓN (INIE)</option>
-                                    <option value="60">JARDÍN BOTÁNICO JOSÉ MARÍA OROZCO</option>
-                                    <option value="112">LABORATORIO DE METROLOGÍA, NORMALIZACIÓN Y CALIDAD (LABCAL)
-                                    </option>
-                                    <option value="33">OFICINA DE DIVULGACIÓN E INFORMACIÓN (ODI)</option>
-                                    <option value="111">OFICINA DE SUMINISTROS OSUM</option>
-                                    <option value="97">PARQUEOS CIENCIAS SOCIALES</option>
-                                    <option value="115">PERIFERIA CAMPUS UNIVERSITARIO</option>
-                                    <option value="109">PISCINAS INSTALACIONES DEPORTIVAS</option>
-                                    <option value="96">PLAZA DE LA AUTONOMÍA AULA MAGNA</option>
-                                    <option value="42">PLAZA DE LA LIBERTAD DE EXPRESIÓN</option>
-                                    <option value="69">RESERVA BIOLÓGICA LEONEL OVIEDO</option>
-                                    <option value="70">RESIDENCIAS ESTUDIANTILES FINCA 1</option>
-                                    <option value="77">RESIDENCIAS ESTUDIANTILES FINCA 2</option>
-                                    <option value="114">SECCIÓN DE TRANSPORTES</option>
-                                    <option value="43">VÍA FERROVIARIA</option>
-                                    <option value="0">Otro</option>
-                                </select>
-
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6" style="padding-bottom: 15px; display: none;" id="div_lugar_atencion">
-                        <div class="form-group">
-                            <label style="text-align: left;" class="col-md-4 control-label">
-                                <p>Lugar de la atención (otro): <span class="required" aria-required="true"> * </span>
-                                </p>
-                            </label>
-                            <div class="col-md-8">
-
-                                <input type="text" size="14" name="lugar_atencion_extra"
-                                    id="lugar_atenlugar_atencion_extracion"
-                                    style="border: 1px solid #c2cad8;border-radius: 4px;padding: 5px 4px !important; width: 100%;"
-                                    value="">
-
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-                <div class="row mb-5">
-                    <div class="col-md-6 p-0 border-right">
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                <label style="text-align: left;" class="col-md-4 control-label">
-                                    <p>1. Hora de despacho: <span class="required" aria-required="true"> * </span></p>
-                                </label>
-                                <div class="col-md-8">
-                                    <input type="text" size="14" name="hora_despacho" id="hora_despacho"
-                                        style="border-width: 1px; border-style: solid; border-image: initial; border-radius: 4px; height: 34px; width: 80px; padding: 5px 4px !important;"
-                                        value="">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                <label style="text-align: left;" class="col-md-4 control-label">
-                                    <p>2. Salida de la escena: <span class="required" aria-required="true"> * </span></p>
-                                </label>
-                                <div class="col-md-8">
-                                    <input type="text" size="14" name="hora_salida" id="hora_salida"
-                                        style="border-width: 1px; border-style: solid; border-image: initial; border-radius: 4px; height: 34px; width: 80px; padding: 5px 4px !important;"
-                                        value="">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                <label style="text-align: left;" class="col-md-4 control-label">
-                                    <p>3. Llegada a la escena: <span class="required" aria-required="true"> * </span></p>
-                                </label>
-                                <div class="col-md-8">
-                                    <input type="text" size="14" name="llegada_allugar" id="llegada_allugar"
-                                        style="border-width: 1px; border-style: solid; border-image: initial; border-radius: 4px; height: 34px; width: 80px; padding: 5px 4px !important;"
-                                        value="">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                <label style="text-align: left;" class="col-md-4 control-label">
-                                    <p>4.Hora de atención: <span class="required" aria-required="true"> * </span></p>
-                                </label>
-                                <div class="col-md-8">
-                                    <input type="text" size="14" name="llegada_alpaciente" id="llegada_alpaciente"
-                                        style="border-width: 1px; border-style: solid; border-image: initial; border-radius: 4px; height: 34px; width: 80px; padding: 5px 4px !important;"
-                                        value="">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                <label style="text-align: left;" class="col-md-4 control-label">
-                                    <p>5. Salida de la escena: <span class="required" aria-required="true"> * </span></p>
-                                </label>
-                                <div class="col-md-8">
-                                    <input type="text" size="14" name="retiro_escena" id="retiro_escena"
-                                        style="border-width: 1px; border-style: solid; border-image: initial; border-radius: 4px; height: 34px; width: 80px; padding: 5px 4px !important;"
-                                        value="">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6 p-0">
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                <label style="text-align: left;" class="col-md-4 control-label">
-                                    <p>6. Llegada al centro de salud:</p>
-                                </label>
-                                <div class="col-md-8">
-                                    <input type="text" size="14" name="llegada_centro_medico" id="llegada_centro_medico"
-                                        style="border: 1px solid #c2cad8;border-radius: 4px;height: 34px;padding: 5px 4px !important;width: 80px;"
-                                        value="">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                <label style="text-align: left;" class="col-md-4 control-label">
-                                    <p>7. Retiro del centro médico:</p>
-                                </label>
-                                <div class="col-md-8">
-                                    <input type="text" size="14" name="retiro_centro_medico" id="retiro_centro_medico"
-                                        style="border: 1px solid #c2cad8;border-radius: 4px;height: 34px;padding: 5px 4px !important;width: 80px;"
-                                        value="">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                <label style="text-align: left;" class="col-md-4 control-label">
-                                    <p>8. Llegada a la base: <span class="required" aria-required="true"> * </span></p>
-                                </label>
-                                <div class="col-md-8">
-                                    <input type="text" size="14" name="llegada_estacion" id="llegada_estacion"
-                                        style="border-width: 1px; border-style: solid; border-image: initial; border-radius: 4px; height: 34px; width: 80px; padding: 5px 4px !important;"
-                                        value="">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                <label style="text-align: left;" class="col-md-4 control-label">
-                                    <p>9. Hora disponible:</p>
-                                </label>
-                                <div class="col-md-8">
-                                    <input type="text" size="14" name="hora_disponible" id="hora_disponible"
-                                        style="border: 1px solid #c2cad8;border-radius: 4px;height: 34px;padding: 5px 4px !important;width: 80px;"
-                                        value="">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                <label style="text-align: left;" class="col-md-4 control-label">
-                                    <p>Tiempo de emergencia:</p>
-                                </label>
-                                <div class="col-md-8">
-                                    <input type="text" name="tiempo_emergencia" id="tiempo_emergencia"
-                                        style="border: 1px solid #c2cad8;border-radius: 4px;height: 34px;padding: 5px 4px !important;width: 80px;"
-                                        value="" disabled="">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6" style="padding-bottom:15px; ">
-                        <div class="form-group">
-                            <label style="text-align: left;" class="col-md-4 control-label">
-                                <p>Tiempo de respuesta:</p>
-                            </label>
-                            <div class="col-md-8">
-
-                                <input type="text" size="14" name="tiempo_respuesta" id="tiempo_respuesta"
-                                    style="border: 1px solid #c2cad8;border-radius: 4px;height: 34px;padding: 5px 4px !important; width: 100%;"
-                                    value="0" disabled="">
-
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <div class="row">
-
-                    <!--<div class="col-md-12" style="padding-bottom:15px; ">
-                                    <div class="form-group">
-                                        <div class="col-md-12">
-
-                                            <fieldset data-role="controlgroup" data-type="horizontal">
-                                                <legend>Categoría de salida</legend>
-                                                <input type="radio" name="categoria_salida" class="form-filter" id="categoria_salida-1" value="1" title="Rojo" ><label style="color: #F64E60;margin-right:15px;" for="categoria_salida-1">Rojo</label>
-                                                <input type="radio" name="categoria_salida" class="form-filter" id="categoria_salida-2" value="2" title="Amarillo" ><label style="color: #FFA800;margin-right:15px;" for="categoria_salida-2">Amarillo</label>
-                                                <input type="radio" name="categoria_salida" class="form-filter" id="categoria_salida-3" value="3" title="Verde" ><label style="color: #1BC5BD;margin-right:15px;" for="categoria_salida-3">Verde</label>
-                                            </fieldset>
-
-                                        </div>
-                                    </div>
-                                </div>-->
+            
+                                    <script>
+                    function showselect(pshow,phide){
+                        document.getElementById(pshow).style.display='block';
+                        document.getElementById(phide).style.display='none';
+                    }
+                </script>
+            
+            <div class="tabbable-custom">
+                <div class="col-md-12" style="border: solid 1px #ccc;">
 
                     <div class="col-md-12" style="padding-bottom:15px; ">
                         <div class="form-group">
-                            <div class="col-md-12">
-
-                                <fieldset data-role="controlgroup" data-type="horizontal" id="jornada_val">
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<legend id="jornada_val_text">
-                                        Jornada<span class="required" aria-required="true"> * </span></legend>
-                                    <input type="radio" name="jornada" class="form-filter" id="jornada-1" value="1"
-                                        title="Diurno"><label style="margin-right:15px;" for="jornada-1">Diurno</label>
-                                    <input type="radio" name="jornada" class="form-filter" id="jornada-2" value="2"
-                                        title="Mixto"><label style="margin-right:15px;" for="jornada-2">Mixto</label>
-                                    <input type="radio" name="jornada" class="form-filter" id="jornada-3" value="3"
-                                        title="Fines de semana"><label style="margin-right:15px;" for="jornada-3">Fines
-                                        de semana</label>
-                                    &nbsp;&nbsp;&nbsp;&nbsp;
-                                </fieldset>
-
-                            </div>
+                            <label style="text-align: left;" class="col-md-12 control-label"><h3>Información del incidente</h3>
+                            </label>
                         </div>
                     </div>
 
-                </div>
+                    <div class="row">
 
-                <div class="row">
+                        <!--<div class="col-md-4" style="padding-bottom:15px; ">
+                            <div class="form-group">
+                                <label style="text-align: left;" class="col-md-4 control-label"><p>Fecha:</p>
+                                </label>
+                                <div class="col-md-8">
 
-                    <div class="col-md-12" style="padding-bottom:15px; ">
-                        <div class="form-group">
-                            <div class="col-md-12">
+                                    <input type='text' size='14' name='fecha_form' id='fecha_form' style='border: 1px solid #c2cad8;border-radius: 4px;height: 34px;padding: 5px 4px !important;' value='' />
 
-                                <table class="table table-hover mb-6">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col">Tripulación</th>
-                                            <th scope="col">Nivel</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-
-
-
-                                        <tr>
-                                            <td>
-                                                <input class="form-control" type="text" id="tripulante_1"
-                                                    name="tripulante_1" value="">
-                                            </td>
-                                            <td>
-                                                <select name="nivel_trip_1" id="nivel_trip_1"
-                                                    class="bs-select form-control   social_information " title="Nivel">
-                                                    <option value=""></option>
-                                                    <option value="1">Conductor</option>
-                                                    <option value="3">Médico General</option>
-                                                    <option value="2">Técnico de emergencias</option>
-                                                </select>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td>
-                                                <input class="form-control" type="text" id="tripulante_2"
-                                                    name="tripulante_2" value="">
-                                            </td>
-                                            <td>
-                                                <select name="nivel_trip_2" id="nivel_trip_2"
-                                                    class="bs-select form-control   social_information " title="Nivel">
-                                                    <option value=""></option>
-                                                    <option value="1">Conductor</option>
-                                                    <option value="3">Médico General</option>
-                                                    <option value="2">Técnico de emergencias</option>
-                                                </select>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td>
-                                                <input class="form-control" type="text" id="tripulante_3"
-                                                    name="tripulante_3" value="">
-                                            </td>
-                                            <td>
-                                                <select name="nivel_trip_3" id="nivel_trip_3"
-                                                    class="bs-select form-control   social_information " title="Nivel">
-                                                    <option value=""></option>
-                                                    <option value="1">Conductor</option>
-                                                    <option value="3">Médico General</option>
-                                                    <option value="2">Técnico de emergencias</option>
-                                                </select>
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td>
-                                                <input class="form-control" type="text" id="tripulante_4"
-                                                    name="tripulante_4" value="">
-                                            </td>
-                                            <td>
-                                                <select name="nivel_trip_4" id="nivel_trip_4"
-                                                    class="bs-select form-control   social_information " title="Nivel">
-                                                    <option value=""></option>
-                                                    <option value="1">Conductor</option>
-                                                    <option value="3">Médico General</option>
-                                                    <option value="2">Técnico de emergencias</option>
-                                                </select>
-                                            </td>
-                                        </tr>
-
-                                    </tbody>
-                                </table>
-
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <div class="row">
-
-                    <div class="col-md-6" style="padding-bottom:15px; ">
-                        <div class="form-group">
-                            <div class="col-md-12">
-
-                                <fieldset data-role="controlgroup" data-type="horizontal">
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<legend id="manejo_paciente_text">
-                                        Manejo paciente<span class="required" aria-required="true"> * </span></legend>
-                                    <input type="radio" name="manejo_paciente" class="form-filter"
-                                        id="manejo_paciente-1" value="1" title="Rojo"><label
-                                        style="color: #F64E60;margin-right:15px;" for="manejo_paciente-1">Rojo</label>
-                                    <input type="radio" name="manejo_paciente" class="form-filter"
-                                        id="manejo_paciente-2" value="2" title="Amarillo"><label
-                                        style="color: #FFA800;margin-right:15px;"
-                                        for="manejo_paciente-2">Amarillo</label>
-                                    <input type="radio" name="manejo_paciente" class="form-filter"
-                                        id="manejo_paciente-3" value="3" title="Verde"><label
-                                        style="color: #1BC5BD;margin-right:15px;" for="manejo_paciente-3">Verde</label>
-                                    &nbsp;&nbsp;&nbsp;&nbsp;
-                                </fieldset>
-
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6" style="padding-bottom:15px; ">
-                        <div class="form-group">
-                            <div class="col-md-12">
-                                <fieldset data-role="controlgroup" data-type="horizontal">
-                                    <legend id="categoria_salida_text">Categoría de salida<span class="required"
-                                            aria-required="true"> * </span></legend>
-                                    <input type="radio" name="categoria_salida" class="form-filter"
-                                        id="categoria_salida-1" value="1" title="Rojo"><label
-                                        style="color: #F64E60;margin-right:15px;" for="categoria_salida-1">Rojo</label>
-                                    <input type="radio" name="categoria_salida" class="form-filter"
-                                        id="categoria_salida-2" value="2" title="Amarillo"><label
-                                        style="color: #FFA800;margin-right:15px;"
-                                        for="categoria_salida-2">Amarillo</label>
-                                    <input type="radio" name="categoria_salida" class="form-filter"
-                                        id="categoria_salida-3" value="3" title="Verde"><label
-                                        style="color: #1BC5BD;margin-right:15px;" for="categoria_salida-3">Verde</label>
-                                    <input type="radio" name="categoria_salida" class="form-filter"
-                                        id="categoria_salida-4" value="4" title="Negro"><label
-                                        style="color: #000000;margin-right:15px;" for="categoria_salida-4">Negro</label>
-                                </fieldset>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <!--<div class="row">
-                            <div class="col-md-12" id="div_procedimientos">
+                                </div>
                             </div>
                         </div>-->
 
-            <div class="col-md-12" style="border: solid 1px #ccc;">
-
-                <div class="col-md-12" style="padding-bottom:15px; ">
-                    <div class="form-group">
-                        <label style="text-align: left;" class="col-md-12 control-label">
-                            <h3>Procedimientos</h3>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="form-group">
-                            <label class="control-label col-md-3"></label>
-                            <div class="radio-list">&nbsp;&nbsp;
-                                <label class="radio-inline" href="#" id="selProc">
-                                    <div class="radio" id="uniform-optionsRadios25">
-                                        <span class="">
-                                            <input type="radio" id="opt1" name="optiontipo" value=""
-                                                onclick="set_access();">
-                                        </span>
-                                    </div> Seleccionar
+                        <div class="col-md-6" style="padding-bottom:15px; ">
+                            <div class="form-group">
+                                <label style="text-align: left;" class="col-md-4 control-label"><p>Consecutivo: <span class="required" aria-required="true"> * </span></p>
                                 </label>
+                                <div class="col-md-8">
 
-                                <label class="radio-inline" href="#" id="selProc">
-                                    <div class="radio" id="uniform-optionsRadios26">
-                                        <span class="checked">
-                                            <input type="radio" id="opt2" name="optiontipo" value="1"
-                                                checked="onclick=&quot;showselect('spnfind','spnbtn')&quot;">
-                                        </span>
-                                    </div> Búsqueda
+                                    <input type="text" size="14" name="consecutivo" id="consecutivo" style="border: 1px solid #c2cad8;border-radius: 4px;padding: 5px 4px !important; width: 100%;" value="EX-3731" disabled="">
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6" style="padding-bottom:15px; ">
+                            <div class="form-group">
+                                <label style="text-align: left;" class="col-md-4 control-label"><p>Unidad: <span class="required" aria-required="true"> * </span></p>
                                 </label>
+                                <div class="col-md-8">
 
+                                    <input type="text" size="14" name="unidad_amb" id="unidad_amb" style="border: 1px solid #c2cad8;border-radius: 4px;padding: 5px 4px !important; width: 100%;" value="">
+
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
+                        
+                    </div>  
 
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="form-group">
-                            <input type="hidden" name="form_proc_type" value="-1">
-                            <input type="hidden" id="form_proc_type0" name="form_proc_type0" value="-1">
-                            <label class="control-label col-md-3">
-                                Procedimientos:
-                            </label>
-                            <div class="col-md-9">
-                                <span id="spnbtn" style="display:none;"></span>
-                                <span id="spnfind">
-                                    <div class="select2-container form-control" id="s2id_selProcAuto"><a
-                                            href="javascript:void(0)" class="select2-choice select2-default"
-                                            tabindex="-1"> <span class="select2-chosen" id="select2-chosen-6">Consulte
-                                                un Procedimiento</span><abbr class="select2-search-choice-close"></abbr>
-                                            <span class="select2-arrow" role="presentation"><b
-                                                    role="presentation"></b></span></a><label for="s2id_autogen6"
-                                            class="select2-offscreen"></label><input
-                                            class="select2-focusser select2-offscreen" type="text" aria-haspopup="true"
-                                            role="button" aria-labelledby="select2-chosen-6" id="s2id_autogen6">
-                                        <div class="select2-drop select2-display-none select2-with-searchbox">
-                                            <div class="select2-search"> <label for="s2id_autogen6_search"
-                                                    class="select2-offscreen"></label> <input type="text"
-                                                    autocomplete="off" autocorrect="off" autocapitalize="off"
-                                                    spellcheck="false" class="select2-input" role="combobox"
-                                                    aria-expanded="true" aria-autocomplete="list"
-                                                    aria-owns="select2-results-6" id="s2id_autogen6_search"
-                                                    placeholder=""> </div>
-                                            <ul class="select2-results" role="listbox" id="select2-results-6"> </ul>
-                                        </div>
-                                    </div><input type="text" id="selProcAuto" name="selProcAuto"
-                                        class="form-control select2-offscreen" value="" tabindex="-1" title="">
-                                </span>
-                                <input type="hidden" id="selProcAutoHidden" name="selProcAutoHidden">
-                                <input type="text" class="form-control" wrap="virtual" style="display:none;"
-                                    id="selProcNew" name="selProcNew">
-                                <select class="form-control" wrap="virtual" style="display:none;" id="sel_favs"
-                                    name="sel_favs"></select>
+                    <div class="row">
 
+                        <div class="col-md-6" style="padding-bottom:15px; ">
+                            <div class="form-group">
+                                <label style="text-align: left;" class="col-md-4 control-label"><p>Despachador: <span class="required" aria-required="true"> * </span></p>
+                                </label>
+                                <div class="col-md-8">
+
+                                    <select name="despachador" id="despachador" class="bs-select form-control   social_information " title="Despachador">
+                                        <option value=""></option><option value="3">4911</option><option value="1">Presencial</option><option value="4">Vía telefónica</option>                                            </select>
+
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="form-group">
-                            <label class="control-label col-md-3">
+                        <div class="col-md-6" style="padding-bottom:15px; ">
+                            <div class="form-group">
+                                <label style="text-align: left;" class="col-md-4 control-label"><p>Tipo de caso: <span class="required" aria-required="true"> * </span></p>
+                                </label>
+                                <div class="col-md-8">
 
-                            </label>
-                            <div class="col-md-9">
-                                <a class="btn btn-outline-primary btn-sm" style="display:none;" title="Agregar"
-                                    name="add_to_sel" id="add_to_sel">
-                                    <i class="fa fa-plus"></i> Agregar </a>
+                                    <select name="tipo_caso" id="tipo_caso" class="bs-select form-control   social_information " title="Tipo de caso">
+                                        <option value=""></option><option value="531">Accidente Acuático( 531 )</option><option value="526">Alteración de la Conducta( 526 )</option><option value="523">Alteración de la Presión Arterial( 523 )</option><option value="535">Atropello( 535 )</option><option value="542">Caída-Precipitación( 542 )</option><option value="536">Colisión( 536 )</option><option value="529">Crisis Convulsiva( 529 )</option><option value="528">Emergencia Gineco-Obstétrica( 528 )</option><option value="524">Evento Vascular Cerebral( 524 )</option><option value="527">Intoxicación-Anafilaxia( 527 )</option><option value="532">Lesiones Causadas por Animales( 532 )</option><option value="534">Lesiones Causadas por Electricidad( 534 )</option><option value="522">Paro Cardio-Respiratorio( 522 )</option><option value="539">Persona Atrapada-Prensada( 539 )</option><option value="525">Persona Diabética( 525 )</option><option value="541">Persona Inconsciente( 541 )</option><option value="521">Problemas Cardíacos( 521 )</option><option value="520">Problemas Respiratorios( 520 )</option><option value="533">Quemaduras( 533 )</option><option value="544">Traslados Intrahospitalarios( 544 )</option><option value="550">Urgencia Médica( 550 )</option><option value="540">Urgencia Traumática( 540 )</option><option value="579">Urgencias Mentales( 579 )</option><option value="537">Vuelco( 537 )</option>                                            </select>
 
-                                <a class="btn btn-outline-primary btn-sm" title="Añadir Medicamento" name="add_drug"
-                                    id="add_drug">
-                                    <i class="fa fa-medkit"></i> Otro </a>
-
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
+                        
+                    </div>  
 
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="form-group">
-                            <label class="control-label col-md-3">
+                    <div class="row">
 
-                            </label>
-                            <div class="col-md-9">
-                                <select class="form-control" name="lstprocs[]" id="lstprocs" multiple="">
+                        <div class="col-md-6" style="padding-bottom:15px; ">
+                            <div class="form-group">
+                                <label style="text-align: left;" class="col-md-4 control-label"><p>Lugar de la atención: <span class="required" aria-required="true"> * </span></p>
+                                </label>
+                                <div class="col-md-8">
+
+                                <div class="select2-container bs-select form-control social_information" id="s2id_lugar_atencion" title="Lugar atencion"><a href="javascript:void(0)" class="select2-choice select2-default" tabindex="-1">   <span class="select2-chosen" id="select2-chosen-15"></span><abbr class="select2-search-choice-close"></abbr>   <span class="select2-arrow" role="presentation"><b role="presentation"></b></span></a><label for="s2id_autogen15" class="select2-offscreen"></label><input class="select2-focusser select2-offscreen" type="text" aria-haspopup="true" role="button" aria-labelledby="select2-chosen-15" id="s2id_autogen15"><div class="select2-drop select2-display-none select2-with-searchbox">   <div class="select2-search">       <label for="s2id_autogen15_search" class="select2-offscreen"></label>       <input type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" class="select2-input" role="combobox" aria-expanded="true" aria-autocomplete="list" aria-owns="select2-results-15" id="s2id_autogen15_search" placeholder="">   </div>   <ul class="select2-results" role="listbox" id="select2-results-15">   </ul></div></div><select name="lugar_atencion" id="lugar_atencion" class="bs-select form-control   social_information  select2-offscreen" title="Lugar atencion" tabindex="-1">
+                                        <option value=""></option><option value="47">ANFITEATRO FINCA 1</option><option value="53">ÁREA VERDE AL LADO CANCHA DERECHO</option><option value="95">AUDITORIO DE AULA MAGNA</option><option value="50">AUDITORIO DETRÁS EDIFICIO DERECHO</option><option value="90">AUDITORIO LANAMME</option><option value="94">AULA MAGNA</option><option value="113">AUROL</option><option value="54">BIBLIOTECA LUIS DEMETRIO TINOCO</option><option value="107">CANCHA FOOTBALL</option><option value="51">CANCHA FOOTBALL DE DERECHO</option><option value="49">CASETA DE SEGURIDAD FRENTE OEPI</option><option value="52">CASETA DE SEGURIDAD INGRESO DERECHO</option><option value="99">CASETA SEGURIDAD INGRESO CIENCIAS SOCIALES</option><option value="118">CASETA SEGURIDAD INGRESO INSTALACIONES DEPORTIVAS </option><option value="89">CASETA SEGURIDAD INGRESO LANAMME</option><option value="102">CENTRO DE INVESTIGACIÓN EN CIENCIAS ATÓMICAS NUCLEARES Y MOLECULARES (CICANUM)</option><option value="103">CENTRO DE INVESTIGACIÓN EN MATEMÁTICA PURA Y APLICADA (CIMPA)</option><option value="79">Centro de Investigaciones Agronómicas (CIA)</option><option value="84">CENTRO DE INVESTIGACIONES EN BIOLOGÍA CELULAR Y MOLECULAR (CIBCM)</option><option value="86">CENTRO DE INVESTIGACIONES EN CIENCIAS DEL MAR Y LIMNOLOGÍA (CIMAR)</option><option value="100">CENTRO DE INVESTIGACIONES EN ELECTROQUÍMICA Y ENERGÍA QUÍMICA (CELEQ)</option><option value="85">CENTRO DE INVESTIGACIONES EN PRODUCTOS NATURALES (CIPRONA)</option><option value="76">Centro para Investigaciones en Granos y Semillas (CIGRAS)</option><option value="73">CONSULTORIOS JURÍDICOS</option><option value="46">EDIFICIO ADMINISTRATIVO A</option><option value="45">EDIFICIO ADMINISTRATIVO B</option><option value="110">EDIFICIO ADMINISTRATIVO PISCINAS</option><option value="57">EDIFICIO CANAL UCR</option><option value="34">EDIFICIO DE AGENCIA UNIVERSITARIA PARA LA GESTIÓN DE EMPRENDIMIENTO (AUGE)</option><option value="2">EDIFICIO DE AGRONOMÍA (AG)</option><option value="5">EDIFICIO DE ARQUITECTURA (AQ)</option><option value="1">EDIFICIO DE ARTES DRAMÁTICAS (AD)</option><option value="3">EDIFICIO DE ARTES MUSICALES (AM)</option><option value="4">EDIFICIO DE ARTES PLÁSTICAS (AP)</option><option value="6">EDIFICIO DE AULAS (AU)</option><option value="63">EDIFICIO DE BIBLIOTECOLOGÍA Y CIENCIAS DE LA INFORMACIÓN</option><option value="8">EDIFICIO DE BIOLOGÍA (BI)</option><option value="9">EDIFICIO DE CIENCIAS ECONÓMICAS (CE)</option><option value="74">EDIFICIO DE CONTROL GENERAL DE SEGURIDAD Y TRÁNSITO</option><option value="106">EDIFICIO DE DE EDUCACIÓN FÍSICA Y DEPORTE</option><option value="11">EDIFICIO DE DERECHO (DE)</option><option value="12">EDIFICIO DE EDUCACIÓN (ED)</option><option value="14">EDIFICIO DE EDUCACIÓN FÍSICA (EF)</option><option value="13">EDIFICIO DE ENFERMERÍA (EF)</option><option value="15">EDIFICIO DE ESTUDIOS GENERALES (EG)</option><option value="18">EDIFICIO DE FACULTAD DE CIENCIAS BÁSICAS (FC)</option><option value="17">EDIFICIO DE FARMACIA (FA)</option><option value="19">EDIFICIO DE FÍSICO MATEMÁTICA (FM)</option><option value="22">EDIFICIO DE INFORMÁTICA</option><option value="23">EDIFICIO DE INGENIERÍA</option><option value="21">EDIFICIO DE INGENIERÍA ELÉCTRICA (IE)</option><option value="66">EDIFICIO DE LA BIBLIOTECA MEDICINA</option><option value="98">EDIFICIO DE LA CASA INFANTIL UNIVERSITARIA CIU</option><option value="44">EDIFICIO DE LA CONTRALORÍA UNIVERSITARIA</option><option value="71">EDIFICIO DE LA EDITORIAL</option><option value="36">EDIFICIO DE LA FUNDACIÓN DE LA UNIVERSIDAD DE COSTA RICA (FUNDEVI)</option><option value="41">EDIFICIO DE LA JUNTA ADMINISTRADORA DE FONDOS DE AHORRO Y PRÉSTAMO (JAFAP)</option><option value="59">EDIFICIO DE LA OFICINA DE BIENESTAR Y SALUD (OBS)</option><option value="48">EDIFICIO DE LA OFICINA EJECUTORA DE PROGRAMAS DE INVERSIONES (OEPI)</option><option value="37">EDIFICIO DE LA OFICINA JURÍDICA</option><option value="39">EDIFICIO DE LA UNIDAD DE APOYO A LA DOCENCIA MEDIADA CON LA TECNOLOGÍA A LA INFORMACIÓN Y COMUNICACIÓN (METICS)</option><option value="24">EDIFICIO DE LETRAS</option><option value="25">EDIFICIO DE MEDICINA</option><option value="26">EDIFICIO DE MICROBIOLOGÍA</option><option value="27">EDIFICIO DE NUTRICIÓN</option><option value="28">EDIFICIO DE ODONTOLOGÍA</option><option value="29">EDIFICIO DE QUÍMICA</option><option value="30">EDIFICIO DE SALUD PÚBLICA</option><option value="31">EDIFICIO DE TECNOLOGÍA DE ALIMENTOS (TA)</option><option value="62">EDIFICIO DE TECNOLOGÍA EN SALUD</option><option value="32">EDIFICIO DE TECNOLOGÍAS EN SALUD (TS)</option><option value="65">EDIFICIO DEL ANTIGUO ODONTOLOGÍA</option><option value="87">EDIFICIO DEL AUDITORIO CIMAR</option><option value="81">EDIFICIO DEL CENTRO DE DIAGNÓSTICO PARA EL CÁNCER Y CIRUGÍA MÍNIMAMENTE INVASIVA</option><option value="83">EDIFICIO DEL CENTRO DE INVESTIGACIÓN EN CIENCIA E INGENIERÍA DE MATERIALES (CICIMA)</option><option value="75">EDIFICIO DEL CENTRO DE INVESTIGACIÓN EN TECNOLOGÍA DE ALIMENTOS  (CITA)</option><option value="67">EDIFICIO DEL CENTRO DE INVESTIGACIONES EN CONTAMINACIÓN AMBIENTAL (CICA)</option><option value="82">EDIFICIO DEL CENTRO DE INVESTIGACIONES EN ESTRUCTURA MICROSCOPICAS CIEMIC</option><option value="64">EDIFICIO DEL CENTRO INVESTIGACIONES EN CIENCIAS GEOLÓGICAS</option><option value="61">EDIFICIO DEL COMEDOR UNIVERSITARIO  </option><option value="40">EDIFICIO DEL DOCTORADO EN GOBIERNO Y POLÍTICAS PÚBLICAS (DGPP)</option><option value="55">EDIFICIO DEL INSTITUTO CONFUCIO</option><option value="78">EDIFICIO DEL INSTITUTO DE INVESTIGACIONES EN SALUD  (INISA)</option><option value="80">EDIFICIO DEL INSTITUTO INVESTIGACIONES EN NUTRICIÓN (CINA)</option><option value="68">EDIFICIO DEL LABORATORIO DE ENSAYOS BIOLÓGICOS  (LEBI)</option><option value="91">EDIFICIO DEL LANAMME</option><option value="93">EDIFICIO DEL PLANETARIO</option><option value="35">EDIFICIO DEL PROGRAMA INTEGRAL DE LA PERSONA ADULTA MAYOR (PIAM)</option><option value="72">EDIFICIO DEL SISTEMA DE ESTUDIOS DE POSGRADO (SEP)</option><option value="92">EDIFICIO EDUCACIÓN CONTINUA</option><option value="88">EDIFICIO PARQUEOS FRENTE CIMAR</option><option value="58">EDIFICIO RADIOEMISORAS UCR</option><option value="16">EDIFICIO SAPRISSA (ES)</option><option value="56">EDIFICIO SEMANARIO UNIVERSIDAD</option><option value="10">EDIFICIOS DE CIENCIAS SOCIALES (CS)</option><option value="7">EDIFICO DE BELLAS ARTES (BA)</option><option value="20">EDIFICO DE GEOLOGÍA (GE)</option><option value="38">EDIFICO DEL CENTRO CENTROAMERICANO DE POBLACIÓN (CCP)</option><option value="117">EDIFICO DEL CENTRO DE INVESTIGACIÓN Y CAPACITACIÓN EN ADMINISTRACIÓN PÚBLICA (CICAP)</option><option value="108">ESTADIO DEL ECOLÓGICO </option><option value="116">FUERA INSTALACIONES DE CAMPUS UNIVERSITARIO </option><option value="104">GIMNASIO 1 INSTALACIONES DEPORTIVAS</option><option value="105">GIMNASIO2 INSTALACIONES DEPORTIVAS</option><option value="101">INSTITUTO DE INVESTIGACIÓN EDUCACIÓN (INIE)</option><option value="60">JARDÍN BOTÁNICO JOSÉ MARÍA OROZCO</option><option value="112">LABORATORIO DE METROLOGÍA, NORMALIZACIÓN Y CALIDAD (LABCAL) </option><option value="33">OFICINA DE DIVULGACIÓN E INFORMACIÓN (ODI)</option><option value="111">OFICINA DE SUMINISTROS OSUM</option><option value="97">PARQUEOS CIENCIAS SOCIALES</option><option value="115">PERIFERIA CAMPUS UNIVERSITARIO</option><option value="109">PISCINAS INSTALACIONES DEPORTIVAS</option><option value="96">PLAZA DE LA AUTONOMÍA AULA MAGNA</option><option value="42">PLAZA DE LA LIBERTAD DE EXPRESIÓN</option><option value="69">RESERVA BIOLÓGICA LEONEL OVIEDO</option><option value="70">RESIDENCIAS ESTUDIANTILES FINCA 1</option><option value="77">RESIDENCIAS ESTUDIANTILES FINCA 2</option><option value="114">SECCIÓN DE TRANSPORTES</option><option value="43">VÍA FERROVIARIA</option>                                                 <option value="0">Otro</option>
                                 </select>
-                                <br>
 
-                                <a id="remove_proc" name="remove_proc" title="Quitar procedimiento"
-                                    class="btn btn-outline-primary btn-sm">
-                                    <i class="fa fa-trash"></i> Quitar procedimiento </a>
-                                <!--a  id='add_to_fav_proc' onclick='add_po_fav();' name='add_to_fav_proc' title="Agregar a favoritos." class='btn btn-outline-primary btn-sm' >
-                                                <i class='fa fa-check' ></i> Agregar a favoritos.                                            </a-->
+                                </div>
                             </div>
-
                         </div>
-                    </div>
-                </div>
-            </div>
 
-            <div class="col-md-12" style="border: solid 1px #ccc;">
+                        <div class="col-md-6" style="padding-bottom: 15px; display: none;" id="div_lugar_atencion">
+                            <div class="form-group">
+                                <label style="text-align: left;" class="col-md-4 control-label"><p>Lugar de la atención (otro): <span class="required" aria-required="true"> * </span></p>
+                                </label>
+                                <div class="col-md-8">
 
-                <div class="col-md-12" style="padding-bottom:15px; ">
-                    <div class="form-group">
-                        <label style="text-align: left;" class="col-md-12 control-label">
-                            <h3>Derivación de paciente</h3>
-                        </label>
-                    </div>
-                </div>
+                                    <input type="text" size="14" name="lugar_atencion_extra" id="lugar_atenlugar_atencion_extracion" style="border: 1px solid #c2cad8;border-radius: 4px;padding: 5px 4px !important; width: 100%;" value="">
 
-                <div class="row" style="padding-bottom:10px; ">
-                    <div class="col-md-6" style="padding-bottom:30px; ">
-                        <div class="form-group">
-                            <label style="text-align: left;" class="col-md-4 control-label">
-                                <p>Traslado al hospital:</p>
-                            </label>
-                            <div class="col-md-8">
-                                <div class="radio-inline">
-                                    <label class="radio radio-rounded radio-success">
-                                        <input id="traslado_hospital" name="traslado_hospital" type="radio" value="1">
-                                        Sí <span></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>  
+                    <div class="row mb-5">
+                        <div class="col-md-6 p-0 border-right">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label style="text-align: left;" class="col-md-4 control-label"><p>Hora de despacho: <span class="required" aria-required="true"> * </span></p></label>
+                                    <div class="col-md-8">
+                                        <input type="text" size="14" name="hora_despacho" id="hora_despacho" style="border-width: 1px; border-style: solid; border-image: initial; border-radius: 4px; height: 34px; width: 80px; padding: 5px 4px !important;" value="">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label style="text-align: left;" class="col-md-4 control-label"><p>Salida de la base: <span class="required" aria-required="true"> * </span></p></label>
+                                    <div class="col-md-8">
+                                        <input type="text" size="14" name="hora_salida" id="hora_salida" style="border-width: 1px; border-style: solid; border-image: initial; border-radius: 4px; height: 34px; width: 80px; padding: 5px 4px !important;" value="">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label style="text-align: left;" class="col-md-4 control-label"><p>Llegada a la escena: <span class="required" aria-required="true"> * </span></p></label>
+                                    <div class="col-md-8">
+                                        <input type="text" size="14" name="llegada_allugar" id="llegada_allugar" style="border-width: 1px; border-style: solid; border-image: initial; border-radius: 4px; height: 34px; width: 80px; padding: 5px 4px !important;" value="">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label style="text-align: left;" class="col-md-4 control-label"><p>Hora de atención: <span class="required" aria-required="true"> * </span></p></label>
+                                    <div class="col-md-8">
+                                        <input type="text" size="14" name="llegada_alpaciente" id="llegada_alpaciente" style="border-width: 1px; border-style: solid; border-image: initial; border-radius: 4px; height: 34px; width: 80px; padding: 5px 4px !important;" value="">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label style="text-align: left;" class="col-md-4 control-label"><p>Salida de la escena: <span class="required" aria-required="true"> * </span></p></label>
+                                    <div class="col-md-8">
+                                        <input type="text" size="14" name="retiro_escena" id="retiro_escena" style="border-width: 1px; border-style: solid; border-image: initial; border-radius: 4px; height: 34px; width: 80px; padding: 5px 4px !important;" value="">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 p-0">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label style="text-align: left;" class="col-md-4 control-label"><p>Llegada al centro de salud:</p></label>
+                                    <div class="col-md-8">
+                                        <input type="text" size="14" name="llegada_centro_medico" id="llegada_centro_medico" style="border: 1px solid #c2cad8;border-radius: 4px;height: 34px;padding: 5px 4px !important;width: 80px;" value="">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label style="text-align: left;" class="col-md-4 control-label"><p>Retiro del centro médico:</p>
                                     </label>
-                                    <label class="radio radio-rounded radio-success">
-                                        <input id="traslado_hospital" name="traslado_hospital" type="radio" value="0"
-                                            checked="checked"> NO <span></span>
+                                    <div class="col-md-8">
+                                        <input type="text" size="14" name="retiro_centro_medico" id="retiro_centro_medico" style="border: 1px solid #c2cad8;border-radius: 4px;height: 34px;padding: 5px 4px !important;width: 80px;" value="">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label style="text-align: left;" class="col-md-4 control-label"><p>Llegada a la base: <span class="required" aria-required="true"> * </span></p>
                                     </label>
+                                    <div class="col-md-8">
+                                        <input type="text" size="14" name="llegada_estacion" id="llegada_estacion" style="border-width: 1px; border-style: solid; border-image: initial; border-radius: 4px; height: 34px; width: 80px; padding: 5px 4px !important;" value="">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label style="text-align: left;" class="col-md-4 control-label"><p>Hora disponible:</p>
+                                    </label>
+                                    <div class="col-md-8">
+                                        <input type="text" size="14" name="hora_disponible" id="hora_disponible" style="border: 1px solid #c2cad8;border-radius: 4px;height: 34px;padding: 5px 4px !important;width: 80px;" value="">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label style="text-align: left;" class="col-md-4 control-label"><p>Tiempo de emergencia:</p>
+                                    </label>
+                                    <div class="col-md-8">
+                                        <input type="text" name="tiempo_emergencia" id="tiempo_emergencia" style="border: 1px solid #c2cad8;border-radius: 4px;height: 34px;padding: 5px 4px !important;width: 80px;" value="" disabled="">
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-md-6" style="padding-bottom: 15px; display: none;" id="traslado_hospital_div">
-                        <div class="form-group">
-                            <label style="text-align: left;" class="col-md-4 control-label">
-                                <p>Hospital:<span class="required" aria-required="true"> * </span> </p>
-                            </label>
-                            <div class="col-md-8">
+                    <div class="row">
+                        <div class="col-md-6" style="padding-bottom:15px; ">
+                            <div class="form-group">
+                                <label style="text-align: left;" class="col-md-4 control-label"><p>Tiempo de respuesta:</p>
+                                </label>
+                                <div class="col-md-8">
 
-                                <div class="select2-container bs-select form-control social_information"
-                                    id="s2id_hospital" title="Hospital"><a href="javascript:void(0)"
-                                        class="select2-choice select2-default" tabindex="-1"> <span
-                                            class="select2-chosen" id="select2-chosen-5"></span><abbr
-                                            class="select2-search-choice-close"></abbr> <span class="select2-arrow"
-                                            role="presentation"><b role="presentation"></b></span></a><label
-                                        for="s2id_autogen5" class="select2-offscreen"></label><input
-                                        class="select2-focusser select2-offscreen" type="text" aria-haspopup="true"
-                                        role="button" aria-labelledby="select2-chosen-5" id="s2id_autogen5">
-                                    <div class="select2-drop select2-display-none select2-with-searchbox">
-                                        <div class="select2-search"> <label for="s2id_autogen5_search"
-                                                class="select2-offscreen"></label> <input type="text" autocomplete="off"
-                                                autocorrect="off" autocapitalize="off" spellcheck="false"
-                                                class="select2-input" role="combobox" aria-expanded="true"
-                                                aria-autocomplete="list" aria-owns="select2-results-5"
-                                                id="s2id_autogen5_search" placeholder=""> </div>
-                                        <ul class="select2-results" role="listbox" id="select2-results-5"> </ul>
-                                    </div>
-                                </div><select name="hospital" id="hospital"
-                                    class="bs-select form-control   social_information  select2-offscreen"
-                                    title="Hospital" tabindex="-1">
-                                    <option value=""></option>
-                                    <option value="12">Clínica Carlos Duran Cartin </option>
-                                    <option value="11">Clínica Central </option>
-                                    <option value="14">Clínica Clorito Picado Thwy </option>
-                                    <option value="13">Clínica Coronado </option>
-                                    <option value="2">Clínica INS </option>
-                                    <option value="18">Clínica Marcial Rodriguez Conejo </option>
-                                    <option value="16">Clínica Ricardo Jimenez Nuñez </option>
-                                    <option value="15">Clínica Ricardo Moreno Cañas </option>
-                                    <option value="17">Clínica Solon Nuñez Frutos </option>
-                                    <option value="1">Hospital Calderon Guardia</option>
-                                    <option value="10">Hospital de las Mujeres Adolfo Carit Eva </option>
-                                    <option value="19">Hospital Hotel La Católica </option>
-                                    <option value="21">Hospital Metropolitano Sede San José </option>
-                                    <option value="5">Hospital México </option>
-                                    <option value="7">Hospital Nacional de Geriatría y Gerontología Raúl Blanco
-                                        Cervantes </option>
-                                    <option value="6">Hospital Nacional de Niños Carlos Sáenz Herrera </option>
-                                    <option value="8">Hospital Nacional Psiquiátrico Manuel Antonio Chapuí y Torres
-                                    </option>
-                                    <option value="9">Hospital Psiquiátrico Roberto Chacón Paut </option>
-                                    <option value="3">Hospital Rafael Ángel Calderón Guardia </option>
-                                    <option value="4">Hospital San Juan de Dios </option>
-                                    <option value="22">OBS</option>
-                                    <option value="20">&nbsp;Hospital Clínica Bíblica </option>
-                                </select>
+                                    <input type="text" size="14" name="tiempo_respuesta" id="tiempo_respuesta" style="border: 1px solid #c2cad8;border-radius: 4px;height: 34px;padding: 5px 4px !important; width: 100%;" value="0" disabled="">
 
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
+                        
+                    </div> 
 
-                <div class="row" style="padding-bottom:10px; ">
-                    <div class="col-md-6" style="padding-bottom:15px; ">
-                    </div>
-                    <div class="col-md-6" style="padding-bottom: 15px; display: none;" id="traslado_hospital_otro_div">
-                        <div class="form-group">
-                            <label style="text-align: left;" class="col-md-4 control-label">
-                                <p>Otro:</p>
-                            </label>
-                            <div class="col-md-8">
+                    <div class="row">
 
-                                <input type="text" size="14" name="hospital_otro" id="hospital_otro"
-                                    style="border: 1px solid #c2cad8;border-radius: 4px;padding: 5px 4px !important; width: 100%;"
-                                    value="">
+                        <!--<div class="col-md-12" style="padding-bottom:15px; ">
+                            <div class="form-group">
+                                <div class="col-md-12">
 
+                                    <fieldset data-role="controlgroup" data-type="horizontal">
+                                        <legend>Categoría de salida</legend>
+                                        <input type="radio" name="categoria_salida" class="form-filter" id="categoria_salida-1" value="1" title="Rojo" ><label style="color: #F64E60;margin-right:15px;" for="categoria_salida-1">Rojo</label>
+                                        <input type="radio" name="categoria_salida" class="form-filter" id="categoria_salida-2" value="2" title="Amarillo" ><label style="color: #FFA800;margin-right:15px;" for="categoria_salida-2">Amarillo</label>
+                                        <input type="radio" name="categoria_salida" class="form-filter" id="categoria_salida-3" value="3" title="Verde" ><label style="color: #1BC5BD;margin-right:15px;" for="categoria_salida-3">Verde</label>
+                                    </fieldset>
+
+                                </div>
+                            </div>
+                        </div>-->
+
+                        <div class="col-md-12" style="padding-bottom:15px; ">
+                            <div class="form-group">
+                                <div class="col-md-12">
+
+                                    <fieldset data-role="controlgroup" data-type="horizontal" id="jornada_val">
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<legend id="jornada_val_text">Jornada<span class="required" aria-required="true"> * </span></legend>
+                                        <input type="radio" name="jornada" class="form-filter" id="jornada-1" value="1" title="Diurno"><label style="margin-right:15px;" for="jornada-1">Diurno</label>
+                                        <input type="radio" name="jornada" class="form-filter" id="jornada-2" value="2" title="Mixto"><label style="margin-right:15px;" for="jornada-2">Mixto</label>
+                                        <input type="radio" name="jornada" class="form-filter" id="jornada-3" value="3" title="Fines de semana"><label style="margin-right:15px;" for="jornada-3">Fines de semana</label>
+                                &nbsp;&nbsp;&nbsp;&nbsp;</fieldset>
+
+                                </div>
                             </div>
                         </div>
-                    </div>
+
+                    </div>  
+
+                    <div class="row">
+
+                        <div class="col-md-12" style="padding-bottom:15px; ">
+                            <div class="form-group">
+                                <div class="col-md-12">
+
+                                    <table class="table table-hover mb-6">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Tripulación</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+
+
+
+                                            <tr>
+                                                <td>
+                                                                                                            <div class="select2-container bs-select form-control social_information" id="s2id_tripulante_1_id"><a href="javascript:void(0)" class="select2-choice select2-default" tabindex="-1">   <span class="select2-chosen" id="select2-chosen-11"></span><abbr class="select2-search-choice-close"></abbr>   <span class="select2-arrow" role="presentation"><b role="presentation"></b></span></a><label for="s2id_autogen11" class="select2-offscreen"></label><input class="select2-focusser select2-offscreen" type="text" aria-haspopup="true" role="button" aria-labelledby="select2-chosen-11" id="s2id_autogen11"><div class="select2-drop select2-display-none select2-with-searchbox">   <div class="select2-search">       <label for="s2id_autogen11_search" class="select2-offscreen"></label>       <input type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" class="select2-input" role="combobox" aria-expanded="true" aria-autocomplete="list" aria-owns="select2-results-11" id="s2id_autogen11_search" placeholder="">   </div>   <ul class="select2-results" role="listbox" id="select2-results-11">   </ul></div></div><select name="tripulante_1_id" id="tripulante_1_id" class="bs-select form-control   social_information  select2-offscreen" tabindex="-1" title="">
+                                                        <option value=""></option><option value="1793">SERGIO GONZÁLEZ PÉREZ</option><option value="1799">REBECA JIMÉNEZ JIMÉNEZ</option><option value="1800">Allan Jiménez Alpízar</option><option value="1801">PAMELA SANABRIA MOYA</option><option value="1802">MÓNICA SANDOVAL SOLANO</option><option value="1803">SAÚL AGUILAR MORALES</option><option value="1805">ISABEL VALVERDE BOGANTES</option><option value="1807">SEDALÍ SOLÍS AGÜERO</option><option value="1808">MARÍA AMELIA VEGA ACOSTA</option><option value="1810">BRYAN SALAS MENDOZA</option><option value="1812">MARCOS ORTEGA ARAYA</option><option value="1814">JIMMY SEGURA MAZARIEGO</option><option value="1840">EDGARDO HIDALGO HIDALGO</option><option value="1842">ANDRES ZAMORA ESQUIVEL</option><option value="1904">MARÍA JOHANNING VARGAS</option><option value="1960">MARIBELL RAMIREZ BOLAÑOS</option><option value="1976">EDUARDO VILLALOBOS MENDEZ</option><option value="1977">RANDALL COTO QUESADA</option><option value="2016">ANA SOLANO ARGUEDAS</option><option value="2019">PAOLA ALVAREZ CISNEROS</option>                                                            </select>
+                                                    <input class="form-control" type="hidden" id="tripulante_1" name="tripulante_1" value="">
+                                                                                                        </td>
+                                            </tr>
+
+                                            <tr>
+                                                <td>
+                                                                                                        <div class="select2-container bs-select form-control social_information" id="s2id_tripulante_2_id"><a href="javascript:void(0)" class="select2-choice select2-default" tabindex="-1">   <span class="select2-chosen" id="select2-chosen-12"></span><abbr class="select2-search-choice-close"></abbr>   <span class="select2-arrow" role="presentation"><b role="presentation"></b></span></a><label for="s2id_autogen12" class="select2-offscreen"></label><input class="select2-focusser select2-offscreen" type="text" aria-haspopup="true" role="button" aria-labelledby="select2-chosen-12" id="s2id_autogen12"><div class="select2-drop select2-display-none select2-with-searchbox">   <div class="select2-search">       <label for="s2id_autogen12_search" class="select2-offscreen"></label>       <input type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" class="select2-input" role="combobox" aria-expanded="true" aria-autocomplete="list" aria-owns="select2-results-12" id="s2id_autogen12_search" placeholder="">   </div>   <ul class="select2-results" role="listbox" id="select2-results-12">   </ul></div></div><select name="tripulante_2_id" id="tripulante_2_id" class="bs-select form-control   social_information  select2-offscreen" tabindex="-1" title="">
+                                                        <option value=""></option><option value="1793">SERGIO GONZÁLEZ PÉREZ</option><option value="1799">REBECA JIMÉNEZ JIMÉNEZ</option><option value="1800">Allan Jiménez Alpízar</option><option value="1801">PAMELA SANABRIA MOYA</option><option value="1802">MÓNICA SANDOVAL SOLANO</option><option value="1803">SAÚL AGUILAR MORALES</option><option value="1805">ISABEL VALVERDE BOGANTES</option><option value="1807">SEDALÍ SOLÍS AGÜERO</option><option value="1808">MARÍA AMELIA VEGA ACOSTA</option><option value="1810">BRYAN SALAS MENDOZA</option><option value="1812">MARCOS ORTEGA ARAYA</option><option value="1814">JIMMY SEGURA MAZARIEGO</option><option value="1840">EDGARDO HIDALGO HIDALGO</option><option value="1842">ANDRES ZAMORA ESQUIVEL</option><option value="1904">MARÍA JOHANNING VARGAS</option><option value="1960">MARIBELL RAMIREZ BOLAÑOS</option><option value="1976">EDUARDO VILLALOBOS MENDEZ</option><option value="1977">RANDALL COTO QUESADA</option><option value="2016">ANA SOLANO ARGUEDAS</option><option value="2019">PAOLA ALVAREZ CISNEROS</option>                                                            </select>
+                                                    <input class="form-control" type="hidden" id="tripulante_2" name="tripulante_2" value="">
+                                                                                                        </td>
+                                                
+                                            </tr>
+
+                                            <tr>
+                                                <td>
+                                                                                                        <div class="select2-container bs-select form-control social_information" id="s2id_tripulante_3_id"><a href="javascript:void(0)" class="select2-choice select2-default" tabindex="-1">   <span class="select2-chosen" id="select2-chosen-13"></span><abbr class="select2-search-choice-close"></abbr>   <span class="select2-arrow" role="presentation"><b role="presentation"></b></span></a><label for="s2id_autogen13" class="select2-offscreen"></label><input class="select2-focusser select2-offscreen" type="text" aria-haspopup="true" role="button" aria-labelledby="select2-chosen-13" id="s2id_autogen13"><div class="select2-drop select2-display-none select2-with-searchbox">   <div class="select2-search">       <label for="s2id_autogen13_search" class="select2-offscreen"></label>       <input type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" class="select2-input" role="combobox" aria-expanded="true" aria-autocomplete="list" aria-owns="select2-results-13" id="s2id_autogen13_search" placeholder="">   </div>   <ul class="select2-results" role="listbox" id="select2-results-13">   </ul></div></div><select name="tripulante_3_id" id="tripulante_3_id" class="bs-select form-control   social_information  select2-offscreen" tabindex="-1" title="">
+                                                        <option value=""></option><option value="1793">SERGIO GONZÁLEZ PÉREZ</option><option value="1799">REBECA JIMÉNEZ JIMÉNEZ</option><option value="1800">Allan Jiménez Alpízar</option><option value="1801">PAMELA SANABRIA MOYA</option><option value="1802">MÓNICA SANDOVAL SOLANO</option><option value="1803">SAÚL AGUILAR MORALES</option><option value="1805">ISABEL VALVERDE BOGANTES</option><option value="1807">SEDALÍ SOLÍS AGÜERO</option><option value="1808">MARÍA AMELIA VEGA ACOSTA</option><option value="1810">BRYAN SALAS MENDOZA</option><option value="1812">MARCOS ORTEGA ARAYA</option><option value="1814">JIMMY SEGURA MAZARIEGO</option><option value="1840">EDGARDO HIDALGO HIDALGO</option><option value="1842">ANDRES ZAMORA ESQUIVEL</option><option value="1904">MARÍA JOHANNING VARGAS</option><option value="1960">MARIBELL RAMIREZ BOLAÑOS</option><option value="1976">EDUARDO VILLALOBOS MENDEZ</option><option value="1977">RANDALL COTO QUESADA</option><option value="2016">ANA SOLANO ARGUEDAS</option><option value="2019">PAOLA ALVAREZ CISNEROS</option>                                                            </select>
+                                                    <input class="form-control" type="hidden" id="tripulante_3" name="tripulante_3" value="">
+                                                                                                        </td>
+                                            </tr>
+
+                                            <tr>
+                                                <td>
+                                                                                                        <div class="select2-container bs-select form-control social_information" id="s2id_tripulante_4_id"><a href="javascript:void(0)" class="select2-choice select2-default" tabindex="-1">   <span class="select2-chosen" id="select2-chosen-14"></span><abbr class="select2-search-choice-close"></abbr>   <span class="select2-arrow" role="presentation"><b role="presentation"></b></span></a><label for="s2id_autogen14" class="select2-offscreen"></label><input class="select2-focusser select2-offscreen" type="text" aria-haspopup="true" role="button" aria-labelledby="select2-chosen-14" id="s2id_autogen14"><div class="select2-drop select2-display-none select2-with-searchbox">   <div class="select2-search">       <label for="s2id_autogen14_search" class="select2-offscreen"></label>       <input type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" class="select2-input" role="combobox" aria-expanded="true" aria-autocomplete="list" aria-owns="select2-results-14" id="s2id_autogen14_search" placeholder="">   </div>   <ul class="select2-results" role="listbox" id="select2-results-14">   </ul></div></div><select name="tripulante_4_id" id="tripulante_4_id" class="bs-select form-control   social_information  select2-offscreen" tabindex="-1" title="">
+                                                        <option value=""></option><option value="1793">SERGIO GONZÁLEZ PÉREZ</option><option value="1799">REBECA JIMÉNEZ JIMÉNEZ</option><option value="1800">Allan Jiménez Alpízar</option><option value="1801">PAMELA SANABRIA MOYA</option><option value="1802">MÓNICA SANDOVAL SOLANO</option><option value="1803">SAÚL AGUILAR MORALES</option><option value="1805">ISABEL VALVERDE BOGANTES</option><option value="1807">SEDALÍ SOLÍS AGÜERO</option><option value="1808">MARÍA AMELIA VEGA ACOSTA</option><option value="1810">BRYAN SALAS MENDOZA</option><option value="1812">MARCOS ORTEGA ARAYA</option><option value="1814">JIMMY SEGURA MAZARIEGO</option><option value="1840">EDGARDO HIDALGO HIDALGO</option><option value="1842">ANDRES ZAMORA ESQUIVEL</option><option value="1904">MARÍA JOHANNING VARGAS</option><option value="1960">MARIBELL RAMIREZ BOLAÑOS</option><option value="1976">EDUARDO VILLALOBOS MENDEZ</option><option value="1977">RANDALL COTO QUESADA</option><option value="2016">ANA SOLANO ARGUEDAS</option><option value="2019">PAOLA ALVAREZ CISNEROS</option>                                                            </select>
+                                                    <input class="form-control" type="hidden" id="tripulante_4" name="tripulante_4" value="">
+                                                                                                        </td>
+                                                
+                                            </tr>
+
+                                        </tbody>
+                                    </table>
+
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>  
+
+                    <div class="row">
+
+                        <div class="col-md-6" style="padding-bottom:15px; ">
+                            <div class="form-group">
+                                <div class="col-md-12">
+
+                                    <fieldset data-role="controlgroup" data-type="horizontal">
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<legend id="manejo_paciente_text">Manejo paciente<span class="required" aria-required="true"> * </span></legend>
+                                        <input type="radio" name="manejo_paciente" class="form-filter" id="manejo_paciente-1" value="1" title="Rojo"><label style="color: #F64E60;margin-right:15px;" for="manejo_paciente-1">Rojo</label>
+                                        <input type="radio" name="manejo_paciente" class="form-filter" id="manejo_paciente-2" value="2" title="Amarillo"><label style="color: #FFA800;margin-right:15px;" for="manejo_paciente-2">Amarillo</label>
+                                        <input type="radio" name="manejo_paciente" class="form-filter" id="manejo_paciente-3" value="3" title="Verde"><label style="color: #1BC5BD;margin-right:15px;" for="manejo_paciente-3">Verde</label>
+                                &nbsp;&nbsp;&nbsp;&nbsp;</fieldset>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6" style="padding-bottom:15px; ">
+                            <div class="form-group">
+                                <div class="col-md-12">
+                                    <fieldset data-role="controlgroup" data-type="horizontal">
+                                        <legend id="categoria_salida_text">Categoría de salida<span class="required" aria-required="true"> * </span></legend>
+                                        <input type="radio" name="categoria_salida" class="form-filter" id="categoria_salida-1" value="1" title="Rojo"><label style="color: #F64E60;margin-right:15px;" for="categoria_salida-1">Rojo</label>
+                                        <input type="radio" name="categoria_salida" class="form-filter" id="categoria_salida-2" value="2" title="Amarillo"><label style="color: #FFA800;margin-right:15px;" for="categoria_salida-2">Amarillo</label>
+                                        <input type="radio" name="categoria_salida" class="form-filter" id="categoria_salida-3" value="3" title="Verde"><label style="color: #1BC5BD;margin-right:15px;" for="categoria_salida-3">Verde</label>
+                                        <input type="radio" name="categoria_salida" class="form-filter" id="categoria_salida-4" value="4" title="Negro"><label style="color: #000000;margin-right:15px;" for="categoria_salida-4">Negro</label>
+                                    </fieldset>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>  
                 </div>
 
-                <div class="row" style="padding-bottom:10px; ">
+                <!--<div class="row">
+                    <div class="col-md-12" id="div_procedimientos">
+                    </div>
+                </div>-->
+
+                <div class="col-md-12" style="border: solid 1px #ccc;">
 
                     <div class="col-md-12" style="padding-bottom:15px; ">
                         <div class="form-group">
-                            <div class="col-md-10">
+                            <label style="text-align: left;" class="col-md-12 control-label"><h3>Procedimientos</h3>
+                            </label>
+                        </div>
+                    </div>
 
-                                <div class="checkbox-inline">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="control-label col-md-3"></label>
+                                <div class="radio-list">&nbsp;&nbsp;
+                                    <label class="radio-inline" href="#" id="selProc">
+                                        <div class="radio" id="uniform-optionsRadios25">
+                                            <span class="">
+                                                <input type="radio" id="opt1" name="optiontipo" value="" onclick="set_access();">
+                                            </span>
+                                        </div> Seleccionar </label>
 
-                                    <label class="checkbox"
-                                        style="text-align: left;width: 200px;text-indent: 20px; "><input
-                                            id="accion_atencion" name="accion_atencion[]" type="checkbox"
-                                            value="3"><span></span> Despacho cancelado </label><label class="checkbox"
-                                        style="text-align: left;width: 200px;text-indent: 20px; "><input
-                                            id="accion_atencion" name="accion_atencion[]" type="checkbox"
-                                            value="2"><span></span> Estabilizado en el lugar </label><label
-                                        class="checkbox"
-                                        style="text-align: left;width: 200px;text-indent: 20px; "><input
-                                            id="accion_atencion" name="accion_atencion[]" type="checkbox"
-                                            value="1"><span></span> No desea traslado </label><label class="checkbox"
-                                        style="text-align: left;width: 200px;text-indent: 20px; "><input
-                                            id="accion_atencion" name="accion_atencion[]" type="checkbox"
-                                            value="4"><span></span> No se localiza al paciente </label>
+                                    <label class="radio-inline" href="#" id="selProc">
+                                        <div class="radio" id="uniform-optionsRadios26">
+                                            <span class="checked">
+                                                <input type="radio" id="opt2" name="optiontipo" value="1" checked="onclick=&quot;showselect('spnfind','spnbtn')&quot;">
+                                            </span>
+                                        </div> Búsqueda  </label>
+
+                                </div>      
+                            </div>       
+                        </div>    
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <input type="hidden" name="form_proc_type" value="-1">
+                                <input type="hidden" id="form_proc_type0" name="form_proc_type0" value="-1">
+                                <label class="control-label col-md-3">
+                                    Procedimientos:
+                                </label>
+                                <div class="col-md-9">
+                                    <span id="spnbtn" style="display:none;"></span>
+                                    <span id="spnfind">
+                                        <div class="select2-container form-control" id="s2id_selProcAuto"><a href="javascript:void(0)" class="select2-choice select2-default" tabindex="-1">   <span class="select2-chosen" id="select2-chosen-17">Consulte un Procedimiento</span><abbr class="select2-search-choice-close"></abbr>   <span class="select2-arrow" role="presentation"><b role="presentation"></b></span></a><label for="s2id_autogen17" class="select2-offscreen"></label><input class="select2-focusser select2-offscreen" type="text" aria-haspopup="true" role="button" aria-labelledby="select2-chosen-17" id="s2id_autogen17"><div class="select2-drop select2-display-none select2-with-searchbox">   <div class="select2-search">       <label for="s2id_autogen17_search" class="select2-offscreen"></label>       <input type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" class="select2-input" role="combobox" aria-expanded="true" aria-autocomplete="list" aria-owns="select2-results-17" id="s2id_autogen17_search" placeholder="">   </div>   <ul class="select2-results" role="listbox" id="select2-results-17">   </ul></div></div><input type="text" id="selProcAuto" name="selProcAuto" class="form-control select2-offscreen" value="" tabindex="-1" title="">
+                                    </span>
+                                    <input type="hidden" id="selProcAutoHidden" name="selProcAutoHidden">  
+                                    <input type="text" class="form-control" wrap="virtual" style="display:none;" id="selProcNew" name="selProcNew">  
+                                    <select class="form-control" wrap="virtual" style="display:none;" id="sel_favs" name="sel_favs"></select>  
+
                                 </div>
+                            </div>                             
+                        </div>                            
+                    </div>
 
-                            </div>
-                        </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="control-label col-md-3">
+                                    
+                                </label>
+                                <div class="col-md-9">
+                                    <a class="btn btn-outline-primary btn-sm" style="display:none;" title="Agregar" name="add_to_sel" id="add_to_sel">
+                                        <i class="fa fa-plus"></i> Agregar                                            </a> 
+                                    
+                                            <a class="btn btn-outline-primary btn-sm" title="Añadir Medicamento" name="add_drug" id="add_drug">
+                                            <i class="fa fa-medkit"></i> Otro                                                    </a>
+
+                                </div>
+                            </div>                             
+                        </div>                            
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="control-label col-md-3">
+                                
+                                </label>
+                                <div class="col-md-9">
+                                    <select class="form-control" name="lstprocs[]" id="lstprocs" multiple="">
+                                                                                    </select>
+                                    <br>
+
+                                    <a id="remove_proc" name="remove_proc" title="Quitar procedimiento" class="btn btn-outline-primary btn-sm">
+                                        <i class="fa fa-trash"></i> Quitar procedimiento                                            </a>
+                                    <!--a  id='add_to_fav_proc' onclick='add_po_fav();' name='add_to_fav_proc' title="Agregar a favoritos." class='btn btn-outline-primary btn-sm' >
+                                        <i class='fa fa-check' ></i> Agregar a favoritos.                                            </a-->
+                                </div>
+                                
+                            </div>                             
+                        </div>                            
                     </div>
                 </div>
 
-            </div>
+                <div class="col-md-12" style="border: solid 1px #ccc;">
 
-            <div class="col-md-12" style="border: solid 1px #ccc;">
-
-                <div class="col-md-12" style="padding-bottom:15px; ">
-                    <div class="form-group">
-                        <label style="text-align: left;" class="col-md-12 control-label">
-                            <h3>Equipo dejado en hospital</h3>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="row" style="padding-bottom:10px; ">
-                    <div class="col-md-12" style="padding-bottom:30px; ">
+                    <div class="col-md-12" style="padding-bottom:15px; ">
                         <div class="form-group">
-                            <div class="col-md-12">
-                                <textarea class="form-control" name="equipo_dejado" id="equipo_dejado"></textarea>
-                            </div>
+                            <label style="text-align: left;" class="col-md-12 control-label"><h3>Derivación de paciente</h3>
+                            </label>
                         </div>
                     </div>
 
-                </div>
-
-                <!--<div class="row" style="padding-bottom:10px; ">
-                                <div class="col-md-6" style="padding-bottom:15px; ">
-                                    <div class="form-group">
-                                        <label style="text-align: left;" class="col-md-4 control-label"><p>Desenlace:</p>
+                    <div class="row" style="padding-bottom:10px; ">
+                        <div class="col-md-6" style="padding-bottom:30px; ">
+                            <div class="form-group">
+                                <label style="text-align: left;" class="col-md-4 control-label"><p>Traslado al hospital:</p>
+                                </label>
+                                <div class="col-md-8">
+                                    <div class="radio-inline">
+                                        <label class="radio radio-rounded radio-success">
+                                            <input id="traslado_hospital" name="traslado_hospital" type="radio" value="1"> Sí                                                    <span></span>
                                         </label>
-                                        <div class="col-md-8">
-
-                                            <div class="checkbox-inline">
-
-                                                <label class="checkbox"> Dado de alta <input id="desenlace" name="desenlace[]" type="checkbox" value="1" /><span></span></label><label class="checkbox"> Niega la atención <input id="desenlace" name="desenlace[]" type="checkbox" value="4" /><span></span></label><label class="checkbox"> Referido a medico OBS <input id="desenlace" name="desenlace[]" type="checkbox" value="3" /><span></span></label><label class="checkbox"> Traslado <input id="desenlace" name="desenlace[]" type="checkbox" value="2" /><span></span></label>                                            </div>
-
-                                        </div>
+                                        <label class="radio radio-rounded radio-success">
+                                            <input id="traslado_hospital" name="traslado_hospital" type="radio" value="0" checked="checked"> NO                                                    <span></span>
+                                        </label>
                                     </div>
                                 </div>
-                            </div>-->
+                            </div>
+                        </div>
+        
+                        <div class="col-md-6" style="padding-bottom: 15px; display: none;" id="traslado_hospital_div">
+                            <div class="form-group">
+                                <label style="text-align: left;" class="col-md-4 control-label"><p>Hospital:<span class="required" aria-required="true"> * </span> </p>
+                                </label>
+                                <div class="col-md-8">
 
-            </div>
+                                    <div class="select2-container bs-select form-control social_information" id="s2id_hospital" title="Hospital"><a href="javascript:void(0)" class="select2-choice select2-default" tabindex="-1">   <span class="select2-chosen" id="select2-chosen-16"></span><abbr class="select2-search-choice-close"></abbr>   <span class="select2-arrow" role="presentation"><b role="presentation"></b></span></a><label for="s2id_autogen16" class="select2-offscreen"></label><input class="select2-focusser select2-offscreen" type="text" aria-haspopup="true" role="button" aria-labelledby="select2-chosen-16" id="s2id_autogen16"><div class="select2-drop select2-display-none select2-with-searchbox">   <div class="select2-search">       <label for="s2id_autogen16_search" class="select2-offscreen"></label>       <input type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" class="select2-input" role="combobox" aria-expanded="true" aria-autocomplete="list" aria-owns="select2-results-16" id="s2id_autogen16_search" placeholder="">   </div>   <ul class="select2-results" role="listbox" id="select2-results-16">   </ul></div></div><select name="hospital" id="hospital" class="bs-select form-control   social_information  select2-offscreen" title="Hospital" tabindex="-1">
+                                        <option value=""></option><option value="12">Clínica Carlos Duran Cartin </option><option value="11">Clínica Central </option><option value="14">Clínica Clorito Picado Thwy </option><option value="13">Clínica Coronado </option><option value="2">Clínica INS  </option><option value="18">Clínica Marcial Rodriguez Conejo </option><option value="16">Clínica Ricardo Jimenez Nuñez </option><option value="15">Clínica Ricardo Moreno Cañas </option><option value="17">Clínica Solon Nuñez Frutos </option><option value="1">Hospital Calderon Guardia</option><option value="10">Hospital de las Mujeres Adolfo Carit Eva </option><option value="19">Hospital Hotel La Católica  </option><option value="21">Hospital Metropolitano Sede San José </option><option value="5">Hospital México </option><option value="7">Hospital Nacional de Geriatría y Gerontología Raúl Blanco Cervantes </option><option value="6">Hospital Nacional de Niños Carlos Sáenz Herrera </option><option value="8">Hospital Nacional Psiquiátrico Manuel Antonio Chapuí y Torres </option><option value="9">Hospital Psiquiátrico Roberto Chacón Paut </option><option value="3">Hospital Rafael Ángel Calderón Guardia </option><option value="4">Hospital San Juan de Dios </option><option value="22">OBS</option><option value="20">&nbsp;Hospital Clínica Bíblica  </option>                                            </select>
 
-            <div class="col-md-12" style="border: solid 1px #ccc;">
-
-                <div class="col-md-12" style="padding-bottom:15px; ">
-                    <div class="form-group">
-                        <label style="text-align: left;" class="col-md-12 control-label">
-                            <h3>Responsables</h3>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="row" style="padding-bottom:10px; ">
-
-                    <div class="col-md-4" style="padding-bottom:15px; ">
-                        <div class="form-group">
-                            <label style="text-align: left;" class=" control-label">
-                                <p>Profesional responsable: <span class="required" aria-required="true"> * </span></p>
-                            </label>
-                            <div class="">
-
-                                <input type="text" name="profesional_reponsable" id="profesional_reponsable"
-                                    style="border: 1px solid #c2cad8;border-radius: 4px;padding: 5px 4px !important;"
-                                    value="MARCOS ORTEGA ARAYA" disabled="">
-
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-md-4" style="padding-bottom:15px; ">
-                        <div class="form-group">
-                            <label style="text-align: left;" class=" control-label">
-                                <p>Contacto médico:</p>
-                            </label>
-                            <div class="">
+                    <div class="row" style="padding-bottom:10px; ">
+                        <div class="col-md-6" style="padding-bottom:15px; ">
+                        </div>
+                        <div class="col-md-6" style="padding-bottom: 15px; display: none;" id="traslado_hospital_otro_div">
+                            <div class="form-group">
+                                <label style="text-align: left;" class="col-md-4 control-label"><p>Otro:</p>
+                                </label>
+                                <div class="col-md-8">
 
-                                <input type="text" name="contacto_medico" id="contacto_medico"
-                                    style="border: 1px solid #c2cad8;border-radius: 4px;padding: 5px 4px !important;"
-                                    value="">
+                                    <input type="text" size="14" name="hospital_otro" id="hospital_otro" style="border: 1px solid #c2cad8;border-radius: 4px;padding: 5px 4px !important; width: 100%;" value="">
 
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-md-4" style="padding-bottom:15px; ">
-                        <div class="form-group">
-                            <label style="text-align: left;" class=" control-label">
-                                <p>Prof. responsable a quien se deriva el paciente:</p>
-                            </label>
-                            <div class="">
+                    <div class="row" style="padding-bottom:10px; ">
+        
+                        <div class="col-md-12" style="padding-bottom:15px; ">
+                            <div class="form-group">
+                                <div class="col-md-10">
 
-                                <input type="text" name="profesional_reponsable_deriva"
-                                    id="profesional_reponsable_deriva"
-                                    style="border: 1px solid #c2cad8;border-radius: 4px;padding: 5px 4px !important;"
-                                    value="">
+                                    <div class="checkbox-inline">
 
+                                        <label class="checkbox" style="text-align: left;width: 200px;text-indent: 20px; "><input id="accion_atencion" name="accion_atencion[]" type="checkbox" value="3"><span></span> Despacho cancelado </label><label class="checkbox" style="text-align: left;width: 200px;text-indent: 20px; "><input id="accion_atencion" name="accion_atencion[]" type="checkbox" value="2"><span></span> Estabilizado en el lugar </label><label class="checkbox" style="text-align: left;width: 200px;text-indent: 20px; "><input id="accion_atencion" name="accion_atencion[]" type="checkbox" value="1"><span></span> No desea traslado </label><label class="checkbox" style="text-align: left;width: 200px;text-indent: 20px; "><input id="accion_atencion" name="accion_atencion[]" type="checkbox" value="4"><span></span> No se localiza al paciente </label>                                            </div>
+
+                                </div>
                             </div>
                         </div>
                     </div>
 
                 </div>
 
-            </div>
+                <div class="col-md-12" style="border: solid 1px #ccc;">
 
-            <div class="form-actions right" style="text-align: right; padding-top:15px;">
-                <button type="button" class="btn btn-secondary" onclick="" id="form_return" name="form_return">
-                    Volver</button>
-                <button type="button" class="btn btn-primary" onclick="if(validar()){subme();} "> Guardar</button>
-                <!-- onclick="back();return validar();"-->
-                <input type="hidden" name="lab" value="">
-                <input type="hidden" name="kardex" value="0">
-                <input type="hidden" name="grupal" value="0">
-                <input type="hidden" name="opc" value="0">
-                <input type="hidden" name="bn_save" value="1">
-                <input type="hidden" name="set_pid" value="173172">
-                <input type="hidden" name="set_encounter" value="1622111">
+                    <div class="col-md-12" style="padding-bottom:15px; ">
+                        <div class="form-group">
+                            <label style="text-align: left;" class="col-md-12 control-label"><h3>Equipo dejado en hospital</h3>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="row" style="padding-bottom:10px; ">
+                        <div class="col-md-12" style="padding-bottom:30px; ">
+                            <div class="form-group">
+                                <div class="col-md-12">
+                                    <textarea class="form-control" name="equipo_dejado" id="equipo_dejado"></textarea>
+                                </div>
+                            </div>
+                        </div>
+        
+                    </div>
+
+                    <!--<div class="row" style="padding-bottom:10px; ">
+                        <div class="col-md-6" style="padding-bottom:15px; ">
+                            <div class="form-group">
+                                <label style="text-align: left;" class="col-md-4 control-label"><p>Desenlace:</p>
+                                </label>
+                                <div class="col-md-8">
+
+                                    <div class="checkbox-inline">
+
+                                        <label class="checkbox"> Dado de alta <input id="desenlace" name="desenlace[]" type="checkbox" value="1" /><span></span></label><label class="checkbox"> Niega la atención <input id="desenlace" name="desenlace[]" type="checkbox" value="4" /><span></span></label><label class="checkbox"> Referido a medico OBS <input id="desenlace" name="desenlace[]" type="checkbox" value="3" /><span></span></label><label class="checkbox"> Traslado <input id="desenlace" name="desenlace[]" type="checkbox" value="2" /><span></span></label>                                            </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>-->
+
+                </div>
+
+                <div class="col-md-12" style="border: solid 1px #ccc;">
+
+                    <div class="col-md-12" style="padding-bottom:15px; ">
+                        <div class="form-group">
+                            <label style="text-align: left;" class="col-md-12 control-label"><h3>Responsables</h3>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="row" style="padding-bottom:10px; ">
+
+                        <div class="col-md-4" style="padding-bottom:15px; ">
+                            <div class="form-group">
+                                <label style="text-align: left;" class=" control-label"><p>Profesional responsable: <span class="required" aria-required="true"> * </span></p>
+                                </label>
+                                <div class="">
+
+                                    <input type="text" name="profesional_reponsable" id="profesional_reponsable" style="border: 1px solid #c2cad8;border-radius: 4px;padding: 5px 4px !important;" value="MARCOS ORTEGA ARAYA" disabled="">
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4" style="padding-bottom:15px; ">
+                            <div class="form-group">
+                                <label style="text-align: left;" class=" control-label"><p>Contacto médico:</p>
+                                </label>
+                                <div class="">
+
+                                    <input type="text" name="contacto_medico" id="contacto_medico" style="border: 1px solid #c2cad8;border-radius: 4px;padding: 5px 4px !important;" value="">
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4" style="padding-bottom:15px; ">
+                            <div class="form-group">
+                                <label style="text-align: left;" class=" control-label"><p>Prof. responsable a quien se deriva el paciente:</p>
+                                </label>
+                                <div class="">
+
+                                    <input type="text" name="profesional_reponsable_deriva" id="profesional_reponsable_deriva" style="border: 1px solid #c2cad8;border-radius: 4px;padding: 5px 4px !important;" value="">
+
+                                </div>
+                            </div>
+                        </div>
+        
+                    </div>
+
+                </div>
+
+                <div class="form-actions right" style="text-align: right; padding-top:15px;">
+                                                                                    <button type="button" class="btn btn-secondary" onclick="" id="form_return" name="form_return"> Volver</button>
+                                                        <button type="button" class="btn btn-primary" onclick="if(validar()){subme();} "> Guardar</button> 
+                                                                                                                <!-- onclick="back();return validar();"-->
+                    <input type="hidden" name="lab" value="">
+                    <input type="hidden" name="kardex" value="0">
+                    <input type="hidden" name="grupal" value="0">
+                    <input type="hidden" name="opc" value="0">
+                    <input type="hidden" name="bn_save" value="1">
+                    <input type="hidden" name="set_pid" value="175357">
+                    <input type="hidden" name="set_encounter" value="1624329">
+                </div>    
             </div>
         </div>
-    </div>
 
-</div>
+    </div>            
+</form>

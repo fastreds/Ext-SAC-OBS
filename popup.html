@@ -136,6 +136,19 @@ button.toggle-btn {
   transition: background-color 0.3s, border-color 0.3s;
 }
 
+/* btn_Cuadrado button style */
+button.btn_Cuadrado {
+  width: 32px;
+  height: 32px;
+  padding: 4px;
+  border: 1px solid #0072CE;
+  background-color: #CCCCCC;
+  font-size: xx-small;
+
+}
+
+
+
 button.toggle-btn.active {
   background-color: #0072CE;
   border-color: #005BB5;
@@ -174,9 +187,18 @@ button.toggle-btn.active {
         <button id="ReiniciarPreferenciasBtn" class="toggle-btn" title="Reiniciar Preferencias ">
           <img src="images/ico/icons8-refresh-64.png" alt="ReiniciarPreferenciasBtn" class="icon">
         </button>
-        <button id="btnAbrir">Gestion De Incidentes</button>
+
         </div>
     </div>
+
+    <div class="container">
+    <h1>Ambulancia</h1>
+    <div class="button-group">     
+      <button class="btn_Cuadrado" id="btnAbrirIncidenttes" title="Abrir ventana de incidentes temporales " ><img src="images\ico\icons8-ambulancia-100.png" class="icon"></button>
+      <button  class="btn_Cuadrado" id="btnCopyInfoIncidentes" title="pegar la información del incidente "><img src="images\ico\icons8-pegar-64.png" class="icon"></button>
+      </div>
+  </div>
+
 
     <!-- Contenedor de Etiquetas -->
     <div class="container">

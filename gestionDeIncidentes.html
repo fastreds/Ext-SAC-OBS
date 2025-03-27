@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Formulario de Datos</title>
     <link href="gestionDeIncidentes/bootstrap.min.css" rel="stylesheet">
-    <link  href="gestionDeIncidentes/all.min.css" rel="stylesheet">
+    <link href="gestionDeIncidentes/all.min.css" rel="stylesheet">
     <link href="gestionDeIncidentes/gestionDeIncidentes.css" rel="stylesheet">
+
 </head>
+
 <body>
     <div class="form-container">
         <div id="DashBoard"></div>
@@ -23,32 +26,59 @@
                     </label>
                 </div>
             </div>
-            
+
             <!-- Botones -->
             <button type="button" class="btn btn-secondary" id="nuevoIncidente">Nuevo Incidente</button>
             <button type="submit" class="btn btn-primary">Guardar</button>
             <br>
-            
+
             <div class="form-group">
                 <label for="unidad_amb">Unidad Ambulancia</label>
                 <select class="form-control" id="unidad_amb">
-                    <option value="1013">1013 Mercedes</option>  
-                   </option><option value="782">782 Toyota</option>  
+                    <option value="1013">1013 Mercedes</option>
+                    </option>
+                    <option value="782">782 Toyota</option>
                 </select>
             </div>
             <div class="form-group">
                 <label for="despachador">Despachador</label>
-                <select  class="form-control" id="despachador">
-                <option value="3">4911</option>
-                <option value="1">Presencial</option>
-                <option value="4">Vía telefónica</option>
+                <select class="form-control" id="despachador">
+                    <option value="3">4911</option>
+                    <option value="1">Presencial</option>
+                    <option value="4">Vía telefónica</option>
                 </select>
             </div>
-            
+
             <div class="form-group">
                 <label for="tipo_caso">Tipo de Caso</label>
-                <select name="tipo_caso" id="tipo_caso" class="bs-select form-control   social_information " title="Tipo de caso">
-                    <option value=""></option><option value="531">Accidente Acuático( 531 )</option><option value="526">Alteración de la Conducta( 526 )</option><option value="523">Alteración de la Presión Arterial( 523 )</option><option value="535">Atropello( 535 )</option><option value="542">Caída-Precipitación( 542 )</option><option value="536">Colisión( 536 )</option><option value="529">Crisis Convulsiva( 529 )</option><option value="528">Emergencia Gineco-Obstétrica( 528 )</option><option value="524">Evento Vascular Cerebral( 524 )</option><option value="527">Intoxicación-Anafilaxia( 527 )</option><option value="532">Lesiones Causadas por Animales( 532 )</option><option value="534">Lesiones Causadas por Electricidad( 534 )</option><option value="522">Paro Cardio-Respiratorio( 522 )</option><option value="539">Persona Atrapada-Prensada( 539 )</option><option value="525">Persona Diabética( 525 )</option><option value="541">Persona Inconsciente( 541 )</option><option value="521">Problemas Cardíacos( 521 )</option><option value="520">Problemas Respiratorios( 520 )</option><option value="533">Quemaduras( 533 )</option><option value="544">Traslados Intrahospitalarios( 544 )</option><option value="550">Urgencia Médica( 550 )</option><option value="540">Urgencia Traumática( 540 )</option><option value="579">Urgencias Mentales( 579 )</option><option value="537">Vuelco( 537 )</option>                                            </select>
+                <select name="tipo_caso" id="tipo_caso" class="bs-select form-control   social_information "
+                    title="Tipo de caso">
+                    <option value=""></option>
+                    <option value="531">Accidente Acuático( 531 )</option>
+                    <option value="526">Alteración de la Conducta( 526 )</option>
+                    <option value="523">Alteración de la Presión Arterial( 523 )</option>
+                    <option value="535">Atropello( 535 )</option>
+                    <option value="542">Caída-Precipitación( 542 )</option>
+                    <option value="536">Colisión( 536 )</option>
+                    <option value="529">Crisis Convulsiva( 529 )</option>
+                    <option value="528">Emergencia Gineco-Obstétrica( 528 )</option>
+                    <option value="524">Evento Vascular Cerebral( 524 )</option>
+                    <option value="527">Intoxicación-Anafilaxia( 527 )</option>
+                    <option value="532">Lesiones Causadas por Animales( 532 )</option>
+                    <option value="534">Lesiones Causadas por Electricidad( 534 )</option>
+                    <option value="522">Paro Cardio-Respiratorio( 522 )</option>
+                    <option value="539">Persona Atrapada-Prensada( 539 )</option>
+                    <option value="525">Persona Diabética( 525 )</option>
+                    <option value="541">Persona Inconsciente( 541 )</option>
+                    <option value="521">Problemas Cardíacos( 521 )</option>
+                    <option value="520">Problemas Respiratorios( 520 )</option>
+                    <option value="533">Quemaduras( 533 )</option>
+                    <option value="544">Traslados Intrahospitalarios( 544 )</option>
+                    <option value="550">Urgencia Médica( 550 )</option>
+                    <option value="540">Urgencia Traumática( 540 )</option>
+                    <option value="579">Urgencias Mentales( 579 )</option>
+                    <option value="537">Vuelco( 537 )</option>
+                </select>
             </div>
 
             <!-- Horarios -->
@@ -91,33 +121,49 @@
 
             <!-- Jornada -->
             <fieldset data-role="controlgroup" data-type="horizontal" id="jornada_val">
-               <legend id="jornada_val_text">Jornada</legend>
-                        <input type="radio" name="jornada" class="form-filter" id="jornada-1" value="1" title="Diurno"><label style="margin-right:15px;" for="jornada-1">Diurno</label>
-                        <input type="radio" name="jornada" class="form-filter" id="jornada-2" value="2" title="Mixto"><label style="margin-right:15px;" for="jornada-2">Mixto</label>
-                 </fieldset>
+                <legend id="jornada_val_text">Jornada</legend>
+
+                    <input type="radio" name="jornada" class="form-filter" id="jornada-1" value="1" title="Diurno"><label style="margin-right:15px;" for="jornada-1">Diurno</label>
+                    <input type="radio" name="jornada" class="form-filter" id="jornada-2" value="2" title="Mixto"><label style="margin-right:15px;" for="jornada-2">Mixto</label>
+                    <input type="radio" name="jornada" class="form-filter" id="jornada-3" value="3" title="Fines de semana"><label style="margin-right:15px;" for="jornada-3">Fines de semana</label>
+            </fieldset>
 
             <!-- Tripulación -->
             <div class="form-group">
                 <label for="tripulante_1">Tripulante 1</label>
-                <input type="text" class="form-control" id="tripulante_1">
-     
-            </div>
-            <div class="form-group">
+                <select class="form-control tripulante-select" id="tripulante_1">
+                  <option value="">Seleccione un tripulante</option>
+                  <!-- Las opciones se llenarán con JavaScript -->
+                </select>
+              </div>
+              
+              <div class="form-group">
                 <label for="tripulante_2">Tripulante 2</label>
-                <input type="text" class="form-control" id="tripulante_2">
-      
-            </div>
-            <div class="form-group">
+                <select class="form-control tripulante-select" id="tripulante_2">
+                  <option value="">Seleccione un tripulante</option>
+                  <!-- Las opciones se llenarán con JavaScript -->
+                </select>
+              </div>
+              
+              <div class="form-group">
                 <label for="tripulante_3">Tripulante 3</label>
-                <input type="text" class="form-control" id="tripulante_3">
-         
-            </div>
-            <div class="form-group">
+                <select class="form-control tripulante-select" id="tripulante_3">
+                  <option value="">Seleccione un tripulante</option>
+                  <!-- Las opciones se llenarán con JavaScript -->
+                </select>
+              </div>
+              <div class="form-group">
                 <label for="tripulante_4">Tripulante 4</label>
-                <input type="text" class="form-control" id="tripulante_4">
+                <select class="form-control tripulante-select" id="tripulante_4">
+                  <option value="">Seleccione un tripulante</option>
+                  <!-- Las opciones se llenarán con JavaScript -->
+                </select>
+              </div>
 
-            </div>
 
+ 
+            
+       
             <!-- Categoría de Salida -->
             <div class="form-group">
                 <label>Categoría de Salida</label>
@@ -128,7 +174,7 @@
                 </div>
             </div>
 
-            
+
             <!-- Categoría de Manejo -->
             <div class="form-group">
                 <label>Categoría de Manejo</label>
@@ -146,5 +192,9 @@
     <script src="gestionDeIncidentes/jquery-3.5.1.min.js"></script>
     <script src="gestionDeIncidentes/bootstrap.min.js"></script>
     <script src="gestionDeIncidentes/gestionDeIncidentes.js"></script>
+    
+  
+
+
 </body>
 </html>

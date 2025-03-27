@@ -5,10 +5,6 @@
 console.clear();
 generaArrayGlobal();
 
-
-
-
-
 ///////////////////////////////////////// constante global para gestionar botones y datos extraidos ////////////
 
 function generaArrayGlobal(){
@@ -22,9 +18,10 @@ function generaArrayGlobal(){
         agenda: { activo: false, sonidoRefrescaAgenda: false },
         BuscarAusentes: { activo: false, sonidoBsucaAusentes: false },
         medicamentos: { activo: true },
-        ExtracDatos: { activo: true, infoCliente:[] },
+        ExtracDatos: { activo: true, infoCliente:false },
         Valoraciones: {activo: false},
-        sonidoAlerta: {activo: false}
+        sonidoAlerta: {activo: false},
+        GestionIncidentes: {infoIncidente: false }
       };
       
       // Guardar la estructura predeterminada en chrome.storage.local
@@ -69,9 +66,7 @@ function generaArrayGlobal(){
 
     //refrescar valoraciones
     if (request.action === "valoracionesAlertRefresh") {
-      verificarEstadoServicioEmergencias(); 
-
-      
+      verificarEstadoServicioEmergencias();   
   
     }
     
@@ -80,6 +75,12 @@ function generaArrayGlobal(){
           console.log("Cambia estado del sonido");
         }
     
+
+     //extraccion de datos  al form de incidentes
+     if (request.action === "llenarFormularioAtencionMedica") {
+      llenarFormularioAtencionMedica();
+    }
+        
 
 });
 

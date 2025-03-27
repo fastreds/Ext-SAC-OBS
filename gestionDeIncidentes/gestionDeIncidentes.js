@@ -88,8 +88,19 @@ function copiarIncidente(index) {
         // Guardar la lista actualizada en localStorage
         localStorage.setItem('incidenteCopiadoGlobal', JSON.stringify(incidenteCopiadoGlobal));
 
-        // Mostrar mensaje de éxito
-        alert('Incidente copiado correctamente.');
+        // Función para guardar los datos en chrome.storage
+
+        chrome.storage.local.get("AAE_EXT_SAC", (result) => {
+            const AAE_EXT_SAC = result.AAE_EXT_SAC || { GestionIncidentes: { infoIncidente: [] } };
+            AAE_EXT_SAC.GestionIncidentes.infoIncidente = []; //limpiamos el contenido previo
+            AAE_EXT_SAC.GestionIncidentes.infoIncidente.push(incidenteCopiado);
+            chrome.storage.local.set({ AAE_EXT_SAC }, () => {
+         
+                console.log(AAE_EXT_SAC);
+            });
+        });
+
+
     } else {
         // Mostrar mensaje de error si el índice no es válido
         alert('Error: Índice de incidente no válido.');
@@ -134,7 +145,7 @@ function editarIncidente(index) {
 
     $('#tripulante_4').val(incidente.tripulante_4);
 
-    $(`input[name="categoria_salida"][value="${incidente.categoria_salida}"]`).prop('checked', true);
+    $(`input[name="categoria_salida"][value="${incidente.categoria_salida}"]`).prop('checked', true); // categoria_manejo
     $(`input[name="categoria_manejo"][value="${incidente.categoria_manejo}"]`).prop('checked', true); // categoria_manejo
 
     // Guardar el índice del incidente que se está editando
@@ -274,7 +285,7 @@ document.addEventListener('DOMContentLoaded', function () {
         SPO2 : 
         FC : 
         FR: 
-        TEM :`;
+        TEMP :`;
 
     // Escuchar el evento 'change' del checkbox
     checkbox.addEventListener('change', function () {
@@ -289,7 +300,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 
-///// función que reciba el id de un elemento <select> y el value de un <option>, y devuelva el texto cor
+///// reciba el id de un elemento <select> y el value de un <option>, y devuelva el texto cor
 function obtenerTextoPorValue(idSelect, value) {
     // Obtener el elemento select por su id
     const selectElement = document.getElementById(idSelect);
@@ -309,3 +320,42 @@ function obtenerTextoPorValue(idSelect, value) {
         return "El elemento select no existe";
     }
 }
+
+
+///////////////////////////////gestion de los tripulantes  //////////////////////////////
+
+
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const tripulantesDisponibles = [
+            { id: "1793", nombre: "SERGIO GONZÁLEZ PÉREZ" },
+            { id: "1799", nombre: "REBECA JIMÉNEZ JIMÉNEZ" },
+            { id: "1800", nombre: "Allan Jiménez Alpízar" },
+            { id: "1801", nombre: "PAMELA SANABRIA MOYA" },
+            { id: "1802", nombre: "MÓNICA SANDOVAL SOLANO" },
+            { id: "1803", nombre: "SAÚL AGUILAR MORALES" },
+            { id: "1805", nombre: "ISABEL VALVERDE BOGANTES" },
+            { id: "1807", nombre: "SEDALÍ SOLÍS AGÜERO" },
+            { id: "1808", nombre: "MARÍA AMELIA VEGA ACOSTA" },
+            { id: "1810", nombre: "BRYAN SALAS MENDOZA" },
+            { id: "1812", nombre: "MARCOS ORTEGA ARAYA" },
+            { id: "1814", nombre: "JIMMY SEGURA MAZARIEGO" },
+            { id: "1976", nombre: "EDUARDO VILLALOBOS MENDEZ" },
+            { id: "1977", nombre: "RANDALL COTO QUESADA" }
+
+        ];
+    
+        // Seleccionar todos los select con la clase "tripulante-select"
+        const selectElements = document.querySelectorAll(".tripulante-select");
+    
+        selectElements.forEach(select => {
+            tripulantesDisponibles.forEach(tripulante => {
+                let option = document.createElement("option");
+                option.value = tripulante.id;
+                option.textContent = tripulante.nombre;
+                select.appendChild(option);
+            });
+        });
+    });
+    

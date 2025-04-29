@@ -210,6 +210,9 @@ $(document).ready(function () {
     mostrarIncidentes();
 });
 
+
+
+/// Al paresionar una tecla adjunta la hora según corresponda. 
 document.addEventListener('keydown', function (event) {
     // Verificar si el foco no está en un campo de texto
     if (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {

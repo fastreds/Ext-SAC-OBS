@@ -18,8 +18,7 @@
             <!-- Campos básicos -->
             <div class="form-group">
                 <label for="informacion_incidente">Información del Incidente</label>
-                <textarea class="form-control" id="informacion_incidente" rows="6">
-                </textarea>
+                <textarea class="form-control" id="informacion_incidente" rows="6"></textarea>
                 <div class="form-group">
                     <label>
                         <input type="checkbox" id="insertarTextoCheckbox"> Insertar información predeterminada
@@ -29,12 +28,15 @@
 
             <!-- Botones -->
             <button type="button" class="btn btn-secondary" id="nuevoIncidente">Nuevo Incidente</button>
-            <button type="submit" class="btn btn-primary">Guardar</button>
+
+            <button type="submit" class="btn btn-primary">Guardar</button>         
             <br>
 
             <div class="form-group">
                 <label for="unidad_amb">Unidad Ambulancia</label>
                 <select class="form-control" id="unidad_amb">
+                      <option value=""></option>
+                    </option>
                     <option value="1013">1013 Mercedes</option>
                     </option>
                     <option value="782">782 Toyota</option>
@@ -43,6 +45,7 @@
             <div class="form-group">
                 <label for="despachador">Despachador</label>
                 <select class="form-control" id="despachador">
+                      <option value=""></option>
                     <option value="3">4911</option>
                     <option value="1">Presencial</option>
                     <option value="4">Vía telefónica</option>
@@ -186,9 +189,13 @@
                 </div>
             </div>
 
-        </form>
-    </div>
+    
 
+        </form>
+          <button id="definirForm">Definir Form</button>
+            <button id="cargarDefaults">Incidentes</button>
+    </div>
+      
     <script src="gestionDeIncidentes/jquery-3.5.1.min.js"></script>
     <script src="gestionDeIncidentes/bootstrap.min.js"></script>
     <script src="gestionDeIncidentes/gestionDeIncidentes.js"></script>

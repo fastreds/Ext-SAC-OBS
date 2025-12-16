@@ -42,5 +42,11 @@
       ],
       "run_at": "document_idle"
     }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["trigger_select2.js"],
+      "matches": ["<all_urls>"]
+    }
   ]
 }

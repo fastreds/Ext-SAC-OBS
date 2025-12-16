@@ -205,20 +205,56 @@ const simuladorTecleo = async (element, text) => {
 
 ///////////////////////// extraccion e inyección de datos de gestion de incidentes  //////////////////////
 
+// Flag state
+let isProcessingForm = false;
+
 async function llenarFormularioAtencionMedica() {
-
-
-  chrome.storage.local.get("AAE_EXT_SAC", (result) => {
-    if (result.AAE_EXT_SAC && result.AAE_EXT_SAC.GestionIncidentes && Array.isArray(result.AAE_EXT_SAC.GestionIncidentes.infoIncidente)) {
-      const datos = result.AAE_EXT_SAC.GestionIncidentes.infoIncidente[0];
-
-      console.log("copia datos al form de incidentes" + datos);
-
-
+  if (isProcessingForm) return;
+  isProcessingForm = true;
 
   try {
+    const text = await navigator.clipboard.readText();
+    let datos;
+    try {
+      datos = JSON.parse(text);
+    } catch (e) {
+      console.error("El contenido del portapapeles no es un JSON válido.", e);
+      alert("El contenido del portapapeles no es un JSON válido.");
+      return false;
+    }
 
+    console.log("Datos desde portapapeles:", datos);
+    return llenarFormularioConDatos(datos);
 
+  } catch (error) {
+    if (error.message.includes("Document is not focused") || error.message.includes("Read permission denied")) {
+      console.warn("Fallo lectura automática de portapapeles. Solicitando ingreso manual.");
+      const manualInput = prompt("No se pudo leer el portapapeles automáticamente (el documento no tenía foco).\n\nPor favor, pega el JSON aquí y presiona Aceptar:");
+      if (manualInput) {
+        try {
+          const datosManual = JSON.parse(manualInput);
+          return llenarFormularioConDatos(datosManual);
+        } catch (e) {
+          alert("El texto pegado no es un JSON válido.");
+          return false;
+        }
+      } else {
+        return false;
+      }
+    }
+
+    console.error('Error al llenar el formulario desde portapapeles:', error);
+    alert('Error al leer del portapapeles: ' + error.message);
+    return false;
+  } finally {
+    isProcessingForm = false;
+  }
+}
+
+// Nueva función extraída para llenar el formulario con el objeto de datos
+function llenarFormularioConDatos(datos) {
+  try {
+    console.log("Procesando datos:", datos);
 
     // Validar que se proporcionaron datos
     if (!datos || typeof datos !== 'object') {
@@ -226,21 +262,19 @@ async function llenarFormularioAtencionMedica() {
     }
 
     // Información del incidente
-    if (datos.unidad_amb !== undefined) {
-      document.getElementById('unidad_amb').value = datos.unidad_amb;
-    }
+    if (datos.unidad_amb !== undefined) document.getElementById('unidad_amb').value = datos.unidad_amb;
+    if (datos.despachador !== undefined) setSelectValue('despachador', datos.despachador);
+    if (datos.tipo_caso !== undefined) setSelectValue('tipo_caso', datos.tipo_caso);
 
-    if (datos.despachador !== undefined) {
-      setSelectValue('despachador', datos.despachador);
-    }
-
-    if (datos.tipo_caso !== undefined) {
-      setSelectValue('tipo_caso', datos.tipo_caso);
+    if (datos.informacion_incidente !== undefined) {
+      const infoIncidenteElement = document.getElementById('informacion_incidente');
+      if (infoIncidenteElement) {
+        infoIncidenteElement.value = datos.informacion_incidente;
+      }
     }
 
     if (datos.lugar_atencion !== undefined) {
       setSelectValue('lugar_atencion', datos.lugar_atencion);
-
       // Mostrar campo "otro" si se seleccionó la opción "Otro" (valor 0)
       if (datos.lugar_atencion === '0' || datos.lugar_atencion === 0) {
         document.getElementById('div_lugar_atencion').style.display = 'block';
@@ -256,38 +290,79 @@ async function llenarFormularioAtencionMedica() {
       'llegada_alpaciente', 'retiro_escena', 'llegada_centro_medico',
       'retiro_centro_medico', 'llegada_estacion', 'hora_disponible'
     ];
-
     camposHora.forEach(campo => {
-      if (datos[campo] !== undefined) {
-        document.getElementById(campo).value = datos[campo];
-      }
+      if (datos[campo] !== undefined) document.getElementById(campo).value = datos[campo];
     });
 
     // Jornada
     if (datos.jornada !== undefined) {
       const radioJornada = document.querySelector(`input[name="jornada"][value="${datos.jornada}"]`);
       if (radioJornada) {
+        radioJornada.click();
         radioJornada.checked = true;
       }
     }
 
     // Tripulación
     for (let i = 1; i <= 4; i++) {
-      const campo = `tripulante_${i}_id`;
-      if (datos[campo] !== undefined) {
-        setSelectValue(campo, datos[campo]);
-        document.getElementById(`tripulante_${i}`).value = datos[campo];
+      const key = `tripulante_${i}`;
+      if (datos[key] !== undefined && datos[key] !== "") {
+        const normalizeText = (text) => {
+          return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+        };
 
+        const rawName = datos[key];
+        const nameToFind = normalizeText(rawName);
+        // Split by whitespace and filter out small words
+        const nameTokens = nameToFind.split(/\s+/).filter(t => t.length > 2);
+
+        const selectId = `tripulante_${i}_id`;
+        const selectElement = document.getElementById(selectId);
+
+        if (selectElement) {
+          let found = false;
+          for (let j = 0; j < selectElement.options.length; j++) {
+            const rawOption = selectElement.options[j].text;
+            const optionText = normalizeText(rawOption);
+
+            // 1. Exact match or inclusion (both ways) - BUT SKIP EMPTY OPTIONS
+            let match = false;
+            if (optionText.length > 0) {
+              match = (optionText === nameToFind || optionText.includes(nameToFind) || nameToFind.includes(optionText));
+            }
+
+            // 2. Token match (if not exact)
+            if (!match && nameTokens.length > 0) {
+              const allTokensPresent = nameTokens.every(token => optionText.includes(token));
+              if (allTokensPresent) {
+                match = true;
+              }
+            }
+
+            if (match) {
+              selectElement.selectedIndex = j;
+              selectElement.dispatchEvent(new Event('change', { bubbles: true }));
+
+              // Inyectar evento para actualizar Select2
+              dispatchSelect2Update(selectId, selectElement.options[j].value);
+
+              found = true;
+              break;
+            }
+          }
+          if (!found) console.warn(`Tripulante no encontrado en lista: ${rawName}`);
+        }
+        // Fallback input text
+        const inputTripulante = document.getElementById(key);
+        if (inputTripulante) inputTripulante.value = datos[key];
       }
     }
 
-    
-
-
     // Manejo paciente
-    if (datos.manejo_paciente !== undefined) {
-      const radioManejo = document.querySelector(`input[name="manejo_paciente"][value="${datos.manejo_paciente}"]`);
+    if (datos.categoria_manejo !== undefined) {
+      const radioManejo = document.querySelector(`input[name="manejo_paciente"][value="${datos.categoria_manejo}"]`);
       if (radioManejo) {
+        radioManejo.click();
         radioManejo.checked = true;
       }
     }
@@ -296,24 +371,20 @@ async function llenarFormularioAtencionMedica() {
     if (datos.categoria_salida !== undefined) {
       const radioCategoria = document.querySelector(`input[name="categoria_salida"][value="${datos.categoria_salida}"]`);
       if (radioCategoria) {
+        radioCategoria.click();
         radioCategoria.checked = true;
       }
     }
 
-    // Derivación de paciente
+    // Derivación de paciente e.g. Hospital
     if (datos.traslado_hospital !== undefined) {
       const radioTraslado = document.querySelector(`input[name="traslado_hospital"][value="${datos.traslado_hospital}"]`);
       if (radioTraslado) {
         radioTraslado.checked = true;
-
-        // Mostrar campos relacionados si es necesario
         if (datos.traslado_hospital === '1' || datos.traslado_hospital === 1) {
           document.getElementById('traslado_hospital_div').style.display = 'block';
-
           if (datos.hospital !== undefined) {
             setSelectValue('hospital', datos.hospital);
-
-            // Mostrar campo "otro" si se seleccionó la opción "Otro"
             if (datos.hospital === '0' || datos.hospital === 0) {
               document.getElementById('traslado_hospital_otro_div').style.display = 'block';
               if (datos.hospital_otro !== undefined) {
@@ -325,43 +396,12 @@ async function llenarFormularioAtencionMedica() {
       }
     }
 
-    // Acciones de atención
-    if (datos.accion_atencion && Array.isArray(datos.accion_atencion)) {
-      datos.accion_atencion.forEach(valor => {
-        const checkbox = document.querySelector(`input[name="accion_atencion[]"][value="${valor}"]`);
-        if (checkbox) {
-          checkbox.checked = true;
-        }
-      });
-    }
-
-    // Equipo dejado en hospital
-    if (datos.equipo_dejado !== undefined) {
-      document.getElementById('equipo_dejado').value = datos.equipo_dejado;
-    }
-
-    // Responsables
-    if (datos.contacto_medico !== undefined) {
-      document.getElementById('contacto_medico').value = datos.contacto_medico;
-    }
-
-    if (datos.profesional_reponsable_deriva !== undefined) {
-      document.getElementById('profesional_reponsable_deriva').value = datos.profesional_reponsable_deriva;
-    }
-
     return true;
-
-    
-  } catch (error) {
-    console.error('Error al llenar el formulario:', error.message);
+  } catch (e) {
+    console.error("Error procesando datos:", e);
+    alert("Error al procesar datos: " + e.message);
     return false;
   }
-
-
-}
-});
-
-
 }
 
 // Función auxiliar para establecer valores en selects
@@ -377,6 +417,10 @@ function setSelectValue(id, value) {
         // Disparar evento change si es necesario
         const event = new Event('change');
         select.dispatchEvent(event);
+
+        // Inyectar evento para actualizar plugins (Select2 etc.)
+        dispatchSelect2Update(id, value);
+
         return true;
       }
     }
@@ -386,7 +430,37 @@ function setSelectValue(id, value) {
     console.error(`Error al establecer valor en select ${id}:`, error);
     return false;
   }
-
-
 }
 
+
+
+// Inicializar script de ayuda en la página
+function initPageScript() {
+  const script = document.createElement('script');
+  script.src = chrome.runtime.getURL('trigger_select2.js');
+  script.onload = function () {
+    this.remove();
+  };
+  (document.head || document.documentElement).appendChild(script);
+}
+// Initialize immediately
+initPageScript();
+
+// Helper to dispatch event to page script
+function dispatchSelect2Update(elementId, value) {
+  document.dispatchEvent(new CustomEvent('ProcessSelect2Update', {
+    detail: {
+      elementId: elementId,
+      value: value
+    }
+  }));
+}
+
+
+// Escuchar mensajes del popup
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "llenarFormularioAtencionMedica") {
+    console.log("Recibido comando: llenarFormularioAtencionMedica");
+    llenarFormularioAtencionMedica();
+  }
+});

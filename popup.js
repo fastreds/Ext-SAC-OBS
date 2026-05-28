@@ -5,7 +5,6 @@
 // Lista de botones del popup
 const runButton1 = document.getElementById("run-script1");
 const runButton2 = document.getElementById("run-script2");
-const runButton3 = document.getElementById("run-script3");
 const runButton4 = document.getElementById("run-script4");
 const runButton5 = document.getElementById("run-script5");
 const runButton6 = document.getElementById("run-Modulab1");
@@ -19,14 +18,22 @@ const infoModulab = document.getElementById("infoModulab");
 const btnCopyInfoIncidentes = document.getElementById("btnCopyInfoIncidentes");
 const btnAbrirIncidenttes = document.getElementById("btnAbrirIncidenttes");
 
-// Elementos para instrucciones/indicaciones
-const instructionSelect = document.getElementById("instructionSelect");
-const TextoDeIndicaciones = document.getElementById("selectedInstructions");
-
 // Mostrar información de versión de la extensión
 const versionSpace = document.getElementById('VersionSpace');
 const manifestData = chrome.runtime.getManifest();
 versionSpace.textContent = `${manifestData.name} - Versión: ${manifestData.version}`;
+
+// Elementos para actualización y soporte
+const btnGithub = document.getElementById("btn-github");
+const updateStatus = document.getElementById("update-status");
+const updateInstructions = document.getElementById("update-instructions");
+const linkExtensions = document.getElementById("link-extensions");
+const linkGuide = document.getElementById("link-guide");
+const linkGuideAlert = document.getElementById("link-guide-alert");
+
+// Elementos para habilitación dinámica de dominios
+const btnEnableSite = document.getElementById("btn-enable-site");
+const currentDomainSpan = document.getElementById("current-domain-span");
 
 // =============================================
 // FUNCIONES PRINCIPALES
@@ -39,18 +46,54 @@ versionSpace.textContent = `${manifestData.name} - Versión: ${manifestData.vers
 function checkAllowedUrl() {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const activeTab = tabs[0];
+    if (!activeTab || !activeTab.url) return;
     const activeUrl = activeTab.url;
-    const allowedUrls = manifestData.host_permissions;
     
-    // Comprobar si la URL activa coincide con alguna URL permitida usando regex
-    const isAllowed = allowedUrls.some(url => {
+    // Verificar si es una página web válida
+    const isWebPage = activeUrl.startsWith("http://") || activeUrl.startsWith("https://");
+    if (!isWebPage) {
+      document.getElementById('popup-content').style.display = 'none';
+      document.getElementById('error-message').style.display = 'block';
+      if (btnEnableSite) btnEnableSite.style.display = 'none';
+      if (currentDomainSpan) currentDomainSpan.textContent = "este tipo de página";
+      return;
+    }
+
+    const allowedUrls = manifestData.host_permissions || [];
+    
+    // Comprobar si la URL activa coincide con alguna URL permitida en el manifest
+    const isAllowedByManifest = allowedUrls.some(url => {
       const regex = new RegExp(url.replace('*', '.*'));
       return regex.test(activeUrl);
     });
 
-    // Mostrar contenido apropiado según permisos
-    document.getElementById('popup-content').style.display = isAllowed ? 'block' : 'none';
-    document.getElementById('error-message').style.display = isAllowed ? 'none' : 'block';
+    if (isAllowedByManifest) {
+      document.getElementById('popup-content').style.display = 'block';
+      document.getElementById('error-message').style.display = 'none';
+      return;
+    }
+
+    // Si no está en el manifest, verificar si tiene permisos dinámicos concedidos
+    try {
+      const urlObj = new URL(activeUrl);
+      const originPattern = `${urlObj.protocol}//${urlObj.host}/*`;
+      
+      chrome.permissions.contains({ origins: [originPattern] }, (hasPermission) => {
+        if (hasPermission) {
+          document.getElementById('popup-content').style.display = 'block';
+          document.getElementById('error-message').style.display = 'none';
+        } else {
+          document.getElementById('popup-content').style.display = 'none';
+          document.getElementById('error-message').style.display = 'block';
+          if (btnEnableSite) btnEnableSite.style.display = 'block';
+          if (currentDomainSpan) currentDomainSpan.textContent = urlObj.host;
+        }
+      });
+    } catch (e) {
+      document.getElementById('popup-content').style.display = 'none';
+      document.getElementById('error-message').style.display = 'block';
+      if (btnEnableSite) btnEnableSite.style.display = 'none';
+    }
   });
 }
 
@@ -98,18 +141,7 @@ function toggleAndExecute(button, action, path, field) {
   });
 }
 
-/**
- * Obtiene las instrucciones seleccionadas del menú desplegable y el campo de texto
- * @returns {string} Texto combinado de las instrucciones
- */
-function getSelectedInstructions() {
-  let text = " ";
-  for (const option of instructionSelect.options) {
-    if (option.selected) text += option.value;
-  }
-  text += TextoDeIndicaciones.value;
-  return text;
-}
+
 
 // =============================================
 // FUNCIONES DE COMUNICACIÓN
@@ -179,16 +211,10 @@ runButton1.addEventListener("click", () => toggleAndExecute(runButton1, "popupCi
 btnvaloraciones.addEventListener("click", () => toggleAndExecute(btnvaloraciones, "valoracionesAlertRefresh", 'Valoraciones', 'activo'));
 
 runButton2.addEventListener("click", () => {
-  const text = getSelectedInstructions();
-  sendMessageWithArgs("agregarBotonATabla", ["Recepcion", text]);
+  sendMessageWithArgs("agregarBotonATabla", ["Recepcion", ""]);
 });
 
-runButton3.addEventListener("click", () => {
-  const text = getSelectedInstructions();
-  sendMessageWithArgs("agregarBotonATabla", ["Medicamento", text]);
-});
-
-runButton4.addEventListener("click", () => sendMessageWithArgs("agregarBotonATabla", ["Correo", TextoDeIndicaciones.value]));
+runButton4.addEventListener("click", () => sendMessageWithArgs("agregarBotonATabla", ["Correo", ""]));
 runButton5.addEventListener("click", () => sendMessageWithArgs("agregarBotonATabla", ["Archivo", ""]));
 
 // Botón Modulab - Extrae datos de identificación
@@ -219,4 +245,193 @@ btnAbrirIncidenttes.addEventListener("click", () => {
 // Botón copiar incidentes
  
   btnCopyInfoIncidentes.addEventListener("click", () => sendMessageWithArgs("llenarFormularioAtencionMedica", [""]));
+
+// =============================================
+// LÓGICA DE ACTUALIZACIÓN DESDE GITHUB
+// =============================================
+
+// Abre el enlace del repositorio
+if (btnGithub) {
+  btnGithub.addEventListener("click", (e) => {
+    e.preventDefault();
+    chrome.tabs.create({ url: "https://github.com/fastreds/Ext-SAC-OBS" });
+  });
+}
+
+// Abre la pestaña de extensiones de Chrome
+if (linkExtensions) {
+  linkExtensions.addEventListener("click", (e) => {
+    e.preventDefault();
+    chrome.tabs.create({ url: "chrome://extensions/" });
+  });
+}
+
+// Abre la guía de actualización
+const openGuide = (e) => {
+  e.preventDefault();
+  chrome.tabs.create({ url: chrome.runtime.getURL("actualizacion.html") });
+};
+
+if (linkGuide) {
+  linkGuide.addEventListener("click", openGuide);
+}
+if (linkGuideAlert) {
+  linkGuideAlert.addEventListener("click", openGuide);
+}
+
+// Controlador para habilitar la extensión en un nuevo dominio en caliente
+if (btnEnableSite) {
+  btnEnableSite.addEventListener("click", () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const activeTab = tabs[0];
+      if (!activeTab || !activeTab.url) return;
+      const activeUrl = activeTab.url;
+      try {
+        const urlObj = new URL(activeUrl);
+        const originPattern = `${urlObj.protocol}//${urlObj.host}/*`;
+
+        chrome.permissions.request({ origins: [originPattern] }, (granted) => {
+          if (chrome.runtime.lastError) {
+            alert("Error al solicitar permisos: " + chrome.runtime.lastError.message);
+            return;
+          }
+          
+          if (granted) {
+            // Registrar dinámicamente los content scripts
+            const scriptId = "dyn-script-" + urlObj.host.replace(/[^a-zA-Z0-9]/g, "-");
+            const register = () => {
+              chrome.scripting.registerContentScripts([{
+                id: scriptId,
+                matches: [originPattern],
+                js: [
+                  "injection.js",
+                  "ControlDeAusentes.js",
+                  "RefrescarAgenda.js",
+                  "ExtraccionDatos.js",
+                  "Etiquetas.js",
+                  "valoraciones.js"
+                ],
+                runAt: "document_idle"
+              }], () => {
+                if (chrome.runtime.lastError) {
+                  alert("Error al registrar scripts dinámicos: " + chrome.runtime.lastError.message);
+                }
+                // Recargar pestaña y cerrar el popup
+                chrome.tabs.reload(activeTab.id);
+                window.close();
+              });
+            };
+
+            // Intentar desregistrar primero por si ya existe
+            chrome.scripting.getRegisteredContentScripts({ ids: [scriptId] }, (existing) => {
+              if (chrome.runtime.lastError) {
+                alert("Error al consultar scripts registrados: " + chrome.runtime.lastError.message);
+                register();
+                return;
+              }
+              if (existing && existing.length > 0) {
+                chrome.scripting.unregisterContentScripts({ ids: [scriptId] }, () => {
+                  if (chrome.runtime.lastError) {
+                    console.error("Error al desregistrar:", chrome.runtime.lastError.message);
+                  }
+                  register();
+                });
+              } else {
+                register();
+              }
+            });
+          } else {
+            alert("Permiso rechazado por el usuario.");
+          }
+        });
+      } catch (err) {
+        alert("Error crítico de ejecución: " + err.message);
+      }
+    });
+  });
+}
+
+/**
+ * Compara dos versiones semánticas (ej. "7.2.1" vs "7.2.2")
+ * Retorna true si la última versión es mayor que la actual.
+ */
+function isNewerVersion(current, latest) {
+  const currParts = current.split('.').map(Number);
+  const lateParts = latest.split('.').map(Number);
+  for (let i = 0; i < Math.max(currParts.length, lateParts.length); i++) {
+    const curr = currParts[i] || 0;
+    const late = lateParts[i] || 0;
+    if (late > curr) return true;
+    if (late < curr) return false;
+  }
+  return false;
+}
+
+/**
+ * Verifica si hay actualizaciones disponibles en el repositorio de GitHub
+ * utilizando almacenamiento en caché para no saturar con peticiones.
+ */
+function checkForUpdates() {
+  const currentVersion = manifestData.version;
+  const CACHE_KEY = "AAE_EXT_SAC_UPDATE_CACHE";
+  const CACHE_DURATION_MS = 60 * 60 * 1000; // 1 hora de caché
+
+  chrome.storage.local.get(CACHE_KEY, (result) => {
+    const now = Date.now();
+    const cache = result[CACHE_KEY];
+
+    if (cache && (now - cache.timestamp < CACHE_DURATION_MS)) {
+      console.log("Usando versión en caché de GitHub:", cache.latestVersion);
+      showUpdateUI(currentVersion, cache.latestVersion);
+      return;
+    }
+
+    // Si no hay caché o ya expiró, consultar GitHub
+    fetch("https://raw.githubusercontent.com/fastreds/Ext-SAC-OBS/main/manifest.json")
+      .then(response => {
+        if (!response.ok) throw new Error("Error en respuesta de red");
+        return response.json();
+      })
+      .then(remoteManifest => {
+        const latestVersion = remoteManifest.version;
+        // Guardar en caché
+        const cacheData = {
+          latestVersion: latestVersion,
+          timestamp: now
+        };
+        chrome.storage.local.set({ [CACHE_KEY]: cacheData }, () => {
+          showUpdateUI(currentVersion, latestVersion);
+        });
+      })
+      .catch(error => {
+        console.error("Error al consultar actualizaciones:", error);
+        // Si falla, mostramos el caché anterior si existe, o un mensaje de error genérico
+        if (cache) {
+          showUpdateUI(currentVersion, cache.latestVersion);
+        } else {
+          if (updateStatus) {
+            updateStatus.textContent = "No se pudo verificar la versión.";
+          }
+        }
+      });
+  });
+}
+
+/**
+ * Actualiza la UI según el resultado de la comparación de versiones
+ */
+function showUpdateUI(current, latest) {
+  if (!updateStatus || !updateInstructions) return;
+
+  if (isNewerVersion(current, latest)) {
+    updateStatus.innerHTML = `⚠️ Nueva versión disponible: <strong style="color: #d9534f; font-size: 11px;">v${latest}</strong>`;
+    updateInstructions.style.display = "block";
+  } else {
+    updateStatus.innerHTML = `✅ Extensión al día (v${current})`;
+    updateInstructions.style.display = "none";
+  }
+}
+
+// Iniciar verificación de actualizaciones al abrir el popup
+checkForUpdates();
 

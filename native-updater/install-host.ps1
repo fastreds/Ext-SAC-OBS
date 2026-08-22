@@ -39,14 +39,21 @@ $json = $json -replace 'EXTENSION_ID', $ExtensionId
 New-Item -ItemType Directory -Force -Path $manifestDestDir | Out-Null
 Set-Content -Path $manifestDest -Value $json -Encoding UTF8
 
-# Registrar en HKCU (no requiere permisos de administrador)
-$regPath = "HKCU:\Software\Google\Chrome\NativeMessagingHosts\$hostName"
-New-Item -Path $regPath -Force | Out-Null
-New-ItemProperty -Path $regPath -Name "(Default)" -Value $manifestDest -PropertyType String -Force | Out-Null
+    # Registrar en HKCU (no requiere permisos de administrador)
+    $regPath = "HKCU:\Software\Google\Chrome\NativeMessagingHosts\$hostName"
+    New-Item -Path $regPath -Force | Out-Null
+    Set-ItemProperty -Path $regPath -Name "(Default)" -Value $manifestDest
 
-Write-Host ""
-Write-Host "Host de actualizacion instalado correctamente." -ForegroundColor Green
-Write-Host "  Manifest : $manifestDest"
-Write-Host "  Registro : $regPath"
-Write-Host ""
-Write-Host "Ahora la extension puede actualizarse con un clic desde el popup."
+    # Verificar que quedó registrado correctamente
+    $regValue = (Get-ItemProperty -Path $regPath -Name "(Default)")."(Default)"
+    if ($regValue -ne $manifestDest) {
+        Write-Error "No se pudo registrar el host en el registro."
+        exit 1
+    }
+
+    Write-Host ""
+    Write-Host "Host de actualizacion instalado correctamente." -ForegroundColor Green
+    Write-Host "  Manifest : $manifestDest"
+    Write-Host "  Registro : $regPath  ->  $regValue"
+    Write-Host ""
+    Write-Host "Ahora la extension puede actualizarse con un clic desde el popup."

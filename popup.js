@@ -27,6 +27,7 @@ versionSpace.textContent = `${manifestData.name} - Versión: ${manifestData.vers
 const btnGithub = document.getElementById("btn-github");
 const updateStatus = document.getElementById("update-status");
 const updateInstructions = document.getElementById("update-instructions");
+const btnCheckUpdates = document.getElementById("btn-check-updates");
 const linkExtensions = document.getElementById("link-extensions");
 const linkGuide = document.getElementById("link-guide");
 const linkGuideAlert = document.getElementById("link-guide-alert");
@@ -479,22 +480,27 @@ function isNewerVersion(current, latest) {
  * Verifica si hay actualizaciones disponibles en el repositorio de GitHub
  * utilizando almacenamiento en caché para no saturar con peticiones.
  */
-function checkForUpdates() {
+function checkForUpdates(force = false) {
   const currentVersion = manifestData.version;
   const CACHE_KEY = "AAE_EXT_SAC_UPDATE_CACHE";
   const CACHE_DURATION_MS = 60 * 60 * 1000; // 1 hora de caché
+
+  if (updateStatus) {
+    updateStatus.style.color = "#888";
+    updateStatus.textContent = force ? "Buscando actualizaciones..." : "Comprobando actualizaciones...";
+  }
 
   chrome.storage.local.get(CACHE_KEY, (result) => {
     const now = Date.now();
     const cache = result[CACHE_KEY];
 
-    if (cache && (now - cache.timestamp < CACHE_DURATION_MS)) {
+    if (!force && cache && (now - cache.timestamp < CACHE_DURATION_MS)) {
       console.log("Usando versión en caché de GitHub:", cache.latestVersion);
       showUpdateUI(currentVersion, cache.latestVersion);
       return;
     }
 
-    // Si no hay caché o ya expiró, consultar GitHub
+    // Consultar GitHub (omite caché si force=true)
     fetch("https://raw.githubusercontent.com/fastreds/Ext-SAC-OBS/main/manifest.json")
       .then(response => {
         if (!response.ok) throw new Error("Error en respuesta de red");
@@ -518,10 +524,18 @@ function checkForUpdates() {
           showUpdateUI(currentVersion, cache.latestVersion);
         } else {
           if (updateStatus) {
+            updateStatus.style.color = "#d9534f";
             updateStatus.textContent = "No se pudo verificar la versión.";
           }
         }
       });
+  });
+}
+
+// Botón discreto de búsqueda manual (omite la caché)
+if (btnCheckUpdates) {
+  btnCheckUpdates.addEventListener("click", () => {
+    checkForUpdates(true);
   });
 }
 

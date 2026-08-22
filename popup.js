@@ -36,17 +36,8 @@ const linkGuideAlert = document.getElementById("link-guide-alert");
 const btnEnableSite = document.getElementById("btn-enable-site");
 const currentDomainSpan = document.getElementById("current-domain-span");
 
-// Elementos para el actualizador automatico (Native Messaging, Windows)
-const btnActualizarAuto = document.getElementById("btn-actualizar-auto");
-const updateSettings = document.getElementById("update-settings");
-const extensionIdSpan = document.getElementById("extension-id");
-const btnCopyId = document.getElementById("btn-copy-id");
-const installPathInput = document.getElementById("install-path");
-const btnSavePath = document.getElementById("btn-save-path");
-const pathSavedOk = document.getElementById("path-saved-ok");
-const linkConfig = document.getElementById("link-config");
-
-const INSTALL_PATH_KEY = "AAE_EXT_SAC_INSTALL_PATH";
+// Botón para descargar la última versión (actualización manual asistida)
+const btnDownloadZip = document.getElementById("btn-download-zip");
 const ZIP_URL = "https://github.com/fastreds/Ext-SAC-OBS/archive/refs/heads/main.zip";
 
 // =============================================
@@ -293,98 +284,10 @@ if (linkGuideAlert) {
   linkGuideAlert.addEventListener("click", openGuide);
 }
 
-// =============================================
-// CONFIGURACIÓN DEL ACTUALIZADOR AUTOMÁTICO (Native Messaging, Windows)
-// =============================================
-
-// Mostrar el ID de la extensión (requerido para instalar el host)
-if (extensionIdSpan) {
-  extensionIdSpan.textContent = chrome.runtime.id;
-}
-
-// Copiar el ID al portapapeles
-if (btnCopyId) {
-  btnCopyId.addEventListener("click", (e) => {
-    e.preventDefault();
-    navigator.clipboard.writeText(chrome.runtime.id).then(() => {
-      btnCopyId.textContent = "¡Copiado!";
-      setTimeout(() => { btnCopyId.textContent = "Copiar"; }, 1500);
-    }).catch(() => {});
-  });
-}
-
-// Cargar la ruta de instalación guardada
-if (installPathInput) {
-  chrome.storage.local.get(INSTALL_PATH_KEY, (r) => {
-    if (r[INSTALL_PATH_KEY]) installPathInput.value = r[INSTALL_PATH_KEY];
-  });
-}
-
-// Guardar la ruta de instalación
-if (btnSavePath) {
-  btnSavePath.addEventListener("click", () => {
-    const val = installPathInput.value.trim();
-    if (!val) return;
-    chrome.storage.local.set({ [INSTALL_PATH_KEY]: val }, () => {
-      pathSavedOk.style.display = "block";
-      setTimeout(() => { pathSavedOk.style.display = "none"; }, 2000);
-      refreshAutoUpdateButton();
-    });
-  });
-}
-
-// Mostrar/ocultar la configuración del actualizador
-if (linkConfig) {
-  linkConfig.addEventListener("click", (e) => {
-    e.preventDefault();
-    updateSettings.style.display = (updateSettings.style.display === "none") ? "block" : "none";
-  });
-}
-
-// Iniciar la actualización automática (1 clic)
-if (btnActualizarAuto) {
-  btnActualizarAuto.addEventListener("click", () => {
-    chrome.storage.local.get(INSTALL_PATH_KEY, (r) => {
-      const path = r[INSTALL_PATH_KEY];
-      if (!path) {
-        updateSettings.style.display = "block";
-        if (updateStatus) updateStatus.textContent = "Configura la ruta de instalación para actualizar.";
-        return;
-      }
-      btnActualizarAuto.disabled = true;
-      btnActualizarAuto.textContent = "Actualizando...";
-      chrome.runtime.sendMessage({ action: "startUpdate", path: path, url: ZIP_URL });
-    });
-  });
-}
-
-// Recibir progreso/resultado desde el service worker
-chrome.runtime.onMessage.addListener((msg) => {
-  if (!msg || !msg.action) return;
-  if (msg.action === "updateProgress") {
-    if (updateStatus) {
-      updateStatus.style.color = "#888";
-      updateStatus.textContent = msg.message;
-    }
-  } else if (msg.action === "updateResult" && !msg.ok) {
-    if (btnActualizarAuto) {
-      btnActualizarAuto.disabled = false;
-      btnActualizarAuto.textContent = "⚙ Actualizar automáticamente";
-    }
-    if (updateStatus) {
-      updateStatus.style.color = "#d9534f";
-      updateStatus.textContent = "Error: " + msg.message;
-    }
-  }
-});
-
-// Muestra el boton de actualizacion automatica solo si hay version nueva y ruta configurada
-function refreshAutoUpdateButton() {
-  chrome.storage.local.get(INSTALL_PATH_KEY, (r) => {
-    const hayRuta = !!r[INSTALL_PATH_KEY];
-    if (btnActualizarAuto) {
-      btnActualizarAuto.style.display = (window.__hayActualizacion && hayRuta) ? "block" : "none";
-    }
+// Descarga directa de la última versión (actualización manual asistida)
+if (btnDownloadZip) {
+  btnDownloadZip.addEventListener("click", () => {
+    chrome.tabs.create({ url: ZIP_URL });
   });
 }
 
@@ -554,15 +457,11 @@ function showUpdateUI(current, latest) {
   if (!updateStatus || !updateInstructions) return;
 
   if (isNewerVersion(current, latest)) {
-    window.__hayActualizacion = true;
     updateStatus.innerHTML = `⚠️ Nueva versión disponible: <strong style="color: #d9534f; font-size: 11px;">v${latest}</strong>`;
     updateInstructions.style.display = "block";
-    refreshAutoUpdateButton();
   } else {
-    window.__hayActualizacion = false;
     updateStatus.innerHTML = `✅ Extensión al día (v${current})`;
     updateInstructions.style.display = "none";
-    if (btnActualizarAuto) btnActualizarAuto.style.display = "none";
   }
 }
 

@@ -519,6 +519,14 @@ function checkForUpdates(force = false) {
       })
       .catch(error => {
         console.error("Error al consultar actualizaciones:", error);
+        // En búsqueda manual, no ocultar el error tras la caché
+        if (force) {
+          if (updateStatus) {
+            updateStatus.style.color = "#d9534f";
+            updateStatus.textContent = "No se pudo verificar (revisa tu conexión).";
+          }
+          return;
+        }
         // Si falla, mostramos el caché anterior si existe, o un mensaje de error genérico
         if (cache) {
           showUpdateUI(currentVersion, cache.latestVersion);

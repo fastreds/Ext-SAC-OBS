@@ -379,50 +379,66 @@ function isNewerVersion(current, latest) {
   return false;
 }
 
-/**
- * Verifica si hay actualizaciones disponibles en el repositorio de GitHub
- * utilizando almacenamiento en caché para no saturar con peticiones.
- */
-function checkForUpdates(force = false) {
-  const currentVersion = manifestData.version;
-  const CACHE_KEY = "AAE_EXT_SAC_UPDATE_CACHE";
-  const CACHE_DURATION_MS = 60 * 60 * 1000; // 1 hora de caché
+const CACHE_KEY = "AAE_EXT_SAC_UPDATE_CACHE";
+const LAST_CHECK_KEY = "AAE_EXT_SAC_LAST_CHECK";
+const CHECK_COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24 horas: máximo 1 consulta al día
+const UPDATE_URL = "https://raw.githubusercontent.com/fastreds/Ext-SAC-OBS/main/manifest.json";
 
+/**
+ * Muestra el resultado guardado sin hacer ninguna petición de red.
+ * Solo dispara una consulta la primera vez (si aún no hay nada almacenado).
+ */
+function showStoredUpdate() {
+  const currentVersion = manifestData.version;
+  if (updateStatus) {
+    updateStatus.style.color = "#888";
+    updateStatus.textContent = "Comprobando actualizaciones...";
+  }
+  chrome.storage.local.get(CACHE_KEY, (result) => {
+    const cache = result[CACHE_KEY];
+    if (cache && cache.latestVersion) {
+      showUpdateUI(currentVersion, cache.latestVersion);
+    } else {
+      // Primera ejecución: una sola comprobación para sembrar la caché
+      fetchLatest(false);
+    }
+  });
+}
+
+/**
+ * Consulta GitHub. Respeta un enfriamiento de 24 h salvo que force=true
+ * (botón manual del usuario). Esto evita saturar/banear en muchas PCs.
+ */
+function fetchLatest(force) {
   if (updateStatus) {
     updateStatus.style.color = "#888";
     updateStatus.textContent = force ? "Buscando actualizaciones..." : "Comprobando actualizaciones...";
   }
-
-  chrome.storage.local.get(CACHE_KEY, (result) => {
+  chrome.storage.local.get(LAST_CHECK_KEY, (res) => {
     const now = Date.now();
-    const cache = result[CACHE_KEY];
-
-    if (!force && cache && (now - cache.timestamp < CACHE_DURATION_MS)) {
-      console.log("Usando versión en caché de GitHub:", cache.latestVersion);
-      showUpdateUI(currentVersion, cache.latestVersion);
+    const last = res[LAST_CHECK_KEY] || 0;
+    if (!force && (now - last < CHECK_COOLDOWN_MS)) {
+      // Dentro del enfriamiento: mostrar lo ya guardado sin tocar la red
+      showStoredUpdate();
       return;
     }
 
-    // Consultar GitHub (omite caché si force=true)
-    fetch("https://raw.githubusercontent.com/fastreds/Ext-SAC-OBS/main/manifest.json")
+    fetch(UPDATE_URL)
       .then(response => {
         if (!response.ok) throw new Error("Error en respuesta de red");
         return response.json();
       })
       .then(remoteManifest => {
         const latestVersion = remoteManifest.version;
-        // Guardar en caché
-        const cacheData = {
-          latestVersion: latestVersion,
-          timestamp: now
-        };
-        chrome.storage.local.set({ [CACHE_KEY]: cacheData }, () => {
-          showUpdateUI(currentVersion, latestVersion);
+        chrome.storage.local.set({
+          [CACHE_KEY]: { latestVersion: latestVersion, timestamp: now },
+          [LAST_CHECK_KEY]: now
+        }, () => {
+          showUpdateUI(manifestData.version, latestVersion);
         });
       })
       .catch(error => {
         console.error("Error al consultar actualizaciones:", error);
-        // En búsqueda manual, no ocultar el error tras la caché
         if (force) {
           if (updateStatus) {
             updateStatus.style.color = "#d9534f";
@@ -430,23 +446,23 @@ function checkForUpdates(force = false) {
           }
           return;
         }
-        // Si falla, mostramos el caché anterior si existe, o un mensaje de error genérico
-        if (cache) {
-          showUpdateUI(currentVersion, cache.latestVersion);
-        } else {
-          if (updateStatus) {
+        // Si falla sin ser forzado, mostramos la caché previa si existe
+        chrome.storage.local.get(CACHE_KEY, (r2) => {
+          if (r2[CACHE_KEY]) {
+            showUpdateUI(manifestData.version, r2[CACHE_KEY].latestVersion);
+          } else if (updateStatus) {
             updateStatus.style.color = "#d9534f";
             updateStatus.textContent = "No se pudo verificar la versión.";
           }
-        }
+        });
       });
   });
 }
 
-// Botón discreto de búsqueda manual (omite la caché)
+// Botón discreto de búsqueda manual (el usuario decide cuándo)
 if (btnCheckUpdates) {
   btnCheckUpdates.addEventListener("click", () => {
-    checkForUpdates(true);
+    fetchLatest(true);
   });
 }
 
@@ -465,6 +481,6 @@ function showUpdateUI(current, latest) {
   }
 }
 
-// Iniciar verificación de actualizaciones al abrir el popup
-checkForUpdates();
+// Al abrir el popup solo se muestra el resultado ya guardado (sin saturar la red)
+showStoredUpdate();
 

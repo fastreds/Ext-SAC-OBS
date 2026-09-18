@@ -301,7 +301,12 @@ function formatearNombrePaciente(d) {
     return partes.join(" ");
   }
 
-  return d.identityCard || d.patientID || "Datos extraídos";
+  const id = d.identityCard || d.patientID || "";
+  if (id && !["refrescar", "buscar", "guardar", "cancelar", "opciones", "limpiar", "aceptar"].includes(id.toLowerCase())) {
+    return `ID: ${id}`;
+  }
+
+  return "Datos extraídos";
 }
 
 // Cargar el último paciente extraído al abrir el popup si ya existe en storage
@@ -315,9 +320,9 @@ chrome.storage.local.get("AAE_EXT_SAC", (result) => {
   }
 });
 
-// Botón Modulab - Extrae datos de identificación
+// Botón Modulab - Extrae datos de identificación o exporta a Modulab
 runButton6.addEventListener("click", async () => {
-  infoModulab.textContent = "Extrayendo datos...";
+  infoModulab.textContent = "Procesando...";
 
   // 1. Intentar ejecución directa en todos los frames
   try {
@@ -333,11 +338,16 @@ runButton6.addEventListener("click", async () => {
           return null;
         }
       });
-      console.log("[Ext-SAC-OBS] Resultados de extracción directa en frames:", results);
+      console.log("[Ext-SAC-OBS] Resultados de ejecución en frames:", results);
 
       if (Array.isArray(results)) {
         for (const r of results) {
           const d = r?.result;
+          if (d?.modulabExportado) {
+            infoModulab.textContent = "Datos exportados a Modulab";
+            console.log("[Ext-SAC-OBS] Modulab: datos exportados al formulario en frame.");
+            return;
+          }
           if (d && (d.fullName || d.nombreCompleto || d.primerApellido || d.firstSurname || d.nombre || d.firstName)) {
             const nombreCompleto = formatearNombrePaciente(d);
             infoModulab.textContent = nombreCompleto;

@@ -6,10 +6,32 @@ function esDatoPacienteValido(datos) {
     (datos.primerApellido && datos.primerApellido.trim().length > 0) ||
     (datos.firstName && datos.firstName.trim().length > 0) ||
     (datos.nombre && datos.nombre.trim().length > 0) ||
-    (datos.identityCard && datos.identityCard.trim().length > 0) ||
-    (datos.patientID && datos.patientID.trim().length > 0)
+    (datos.identityCard && datos.identityCard.trim().length > 0 && esIdentificacionValida(datos.identityCard)) ||
+    (datos.patientID && datos.patientID.trim().length > 0 && esIdentificacionValida(datos.patientID))
   );
 }
+
+// Valida que una cadena sea un número de identificación o carné creíble y no texto de la UI
+function esIdentificacionValida(str) {
+  if (!str || typeof str !== "string") return false;
+  const s = str.trim();
+  if (s.length < 4 || s.length > 25) return false;
+  const sLower = s.toLowerCase();
+  const uiBlacklist = [
+    "refrescar", "buscar", "guardar", "cancelar", "opciones", "limpiar",
+    "aceptar", "eliminar", "editar", "modificar", "cerrar", "nuevo", "nueva",
+    "identificacion", "identificación", "identificaci", "cedula", "cédula",
+    "carne", "carné", "paciente", "expediente", "historial", "estudiante",
+    "funcionario", "masculino", "femenino", "activo", "inactivo", "ninguno",
+    "detalles", "nombre", "apellidos", "primer", "segundo", "telefono",
+    "celular", "correo", "agenda", "servicio", "centro", "doctor", "ir", "lista"
+  ];
+  if (uiBlacklist.includes(sLower)) return false;
+  // Debe contener al menos un dígito numérico
+  if (!/\d/.test(s)) return false;
+  return true;
+}
+
 
 // Busca elementos popover o modales de cita en un documento
 function buscarPopover(doc) {
@@ -78,13 +100,13 @@ function extraerDatosDeAgenda(popoverContainer) {
   const idMatch = html.match(/Identificación\s*:\s*(?:<span[^>]*>)?(\d+)/i) ||
                   textContent.match(/Identificación\s*:\s*(\d+)/i) ||
                   textContent.match(/Identificacion\s*:\s*(\d+)/i);
-  const id = idMatch ? idMatch[1].trim() : "";
+  const id = (idMatch && esIdentificacionValida(idMatch[1])) ? idMatch[1].trim() : "";
 
   // 3. Carné
   const studentCardMatch = html.match(/Carné estudiantil:\s*(?:<span[^>]*>)?([A-Za-z0-9]+)/i) ||
                            textContent.match(/Carné(?:\s+estudiantil)?\s*:\s*([A-Za-z0-9]+)/i) ||
                            textContent.match(/Carne(?:\s+estudiantil)?\s*:\s*([A-Za-z0-9]+)/i);
-  const studentCard = studentCardMatch ? studentCardMatch[1].trim() : "";
+  const studentCard = (studentCardMatch && esIdentificacionValida(studentCardMatch[1])) ? studentCardMatch[1].trim() : "";
 
   // 4. Fecha de nacimiento
   const dobMatch = html.match(/F\.?\s*Nacimiento\s*:\s*(?:<span[^>]*>)?(\d{2}\/\d{2}\/\d{4})/i) ||
@@ -203,10 +225,33 @@ function extraerDatosDeExpediente(doc) {
 
       // Cédula / Identificación / Carné
       if (!resultado.identityCard && (textLower.includes("cédula") || textLower.includes("cedula") || textLower.includes("carné") || textLower.includes("carne") || textLower.includes("identificación") || textLower.includes("identificacion"))) {
-        const m = text.match(/[A-Za-z0-9\-_]{6,}/);
-        if (m) {
-          resultado.identityCard = m[0];
-          if (!resultado.patientID) resultado.patientID = m[0];
+        // Prioridad 1: Regex buscando el valor tras la etiqueta
+        const labelMatch = text.match(/(?:identificaci[oó]n|c[eé]dula|carn[eé]|documento|nhc|external\s*id)\s*[:#-]?\s*([A-Za-z0-9\-]+)/i);
+        if (labelMatch && esIdentificacionValida(labelMatch[1])) {
+          resultado.identityCard = labelMatch[1].trim();
+          if (!resultado.patientID) resultado.patientID = resultado.identityCard;
+        }
+
+        // Prioridad 2: Elemento hijo con el valor (.text-muted, dd, td)
+        if (!resultado.identityCard) {
+          const valEl = item.querySelector('.text-muted, dd, td:last-child');
+          const valText = valEl ? valEl.textContent.trim() : "";
+          if (esIdentificacionValida(valText)) {
+            resultado.identityCard = valText;
+            if (!resultado.patientID) resultado.patientID = valText;
+          }
+        }
+
+        // Prioridad 3: Formato de cédula costarricense (9 dígitos o con guiones) o carné UCR
+        if (!resultado.identityCard) {
+          const crMatch = text.match(/\b([1-9]\d{8})\b/) || 
+                          text.match(/\b([1-9]-\d{4}-\d{4})\b/) || 
+                          text.match(/\b([A-Za-z]\d{5})\b/) ||
+                          text.match(/\b(\d{9,12})\b/);
+          if (crMatch && esIdentificacionValida(crMatch[1])) {
+            resultado.identityCard = crMatch[1];
+            if (!resultado.patientID) resultado.patientID = crMatch[1];
+          }
         }
       }
 
@@ -239,6 +284,18 @@ function extraerDatosDeExpediente(doc) {
     }
 
     // Fallbacks si algún dato no se extrajo
+    if (!resultado.identityCard) {
+      const crMatch = searchRoot.textContent.match(/(?:identificaci[oó]n|c[eé]dula|carn[eé])\s*[:#-]?\s*([A-Za-z0-9\-]+)/i) ||
+                      searchRoot.textContent.match(/\b([1-9]\d{8})\b/) ||
+                      searchRoot.textContent.match(/\b([1-9]-\d{4}-\d{4})\b/) ||
+                      searchRoot.textContent.match(/\b([A-Za-z]\d{5})\b/) ||
+                      searchRoot.textContent.match(/\b(\d{9,12})\b/);
+      if (crMatch && esIdentificacionValida(crMatch[1])) {
+        resultado.identityCard = crMatch[1];
+        if (!resultado.patientID) resultado.patientID = crMatch[1];
+      }
+    }
+
     if (!resultado.birthDate) {
       const m = searchRoot.textContent.match(/\b\d{2}\/\d{2}\/\d{4}\b/);
       if (m) resultado.birthDate = m[0];
@@ -248,7 +305,16 @@ function extraerDatosDeExpediente(doc) {
       if (m) resultado.email = m[0];
     }
     if (!resultado.patientID) {
-      resultado.patientID = searchRoot.querySelector('.d-flex.align-items-center.justify-content-between span.text-muted')?.textContent.trim() || "";
+      const possibleId = searchRoot.querySelector('.d-flex.align-items-center.justify-content-between span.text-muted')?.textContent.trim() || "";
+      if (esIdentificacionValida(possibleId)) {
+        resultado.patientID = possibleId;
+      }
+    }
+    if (!resultado.patientID && resultado.identityCard) {
+      resultado.patientID = resultado.identityCard;
+    }
+    if (!resultado.identityCard && resultado.patientID) {
+      resultado.identityCard = resultado.patientID;
     }
   } catch (e) {
     console.warn("[Ext-SAC-OBS] Error en extracción de expediente:", e);
@@ -299,20 +365,20 @@ function buscarYExtraerDatosPaciente(rootDoc = document) {
 async function extractIdentificationData() {
   console.log("[Ext-SAC-OBS] Ejecutando extractIdentificationData...");
 
-  // Buscar en el documento y en todos los iframes hijos
+  // 1. Exportar datos a Modulab si este frame contiene el formulario de Modulab
+  const modulabForm = document.querySelector('patient-creation-dialog') || document.querySelector('patient-filter-dialog');
+  if (modulabForm) {
+    exportarDatosAModulab(modulabForm);
+    return { modulabExportado: true };
+  }
+
+  // 2. Buscar en el documento y en todos los iframes hijos
   const datosPaciente = buscarYExtraerDatosPaciente(document);
 
   if (datosPaciente && esDatoPacienteValido(datosPaciente)) {
     guardarDatosPaciente(datosPaciente);
     console.log("[Ext-SAC-OBS] Datos de paciente extraídos y guardados con éxito:", datosPaciente);
     return datosPaciente;
-  }
-
-  // Exportar datos a Modulab si está disponible en este frame
-  const modulabForm = document.querySelector('patient-creation-dialog');
-  if (modulabForm) {
-    exportarDatosAModulab(modulabForm);
-    return { modulabExportado: true };
   }
 
   console.log("[Ext-SAC-OBS] No se encontraron datos válidos de expediente ni popover en este frame.");
@@ -360,110 +426,205 @@ function guardarDatosPaciente(datosPaciente) {
   });
 }
 
-// Función para exportar datos a Modulab
-function exportarDatosAModulab(modulabForm) {
-  chrome.storage.local.get("AAE_EXT_SAC", (result) => {
-    if (result.AAE_EXT_SAC && result.AAE_EXT_SAC.ExtracDatos && Array.isArray(result.AAE_EXT_SAC.ExtracDatos.infoCliente)) {
-      const data = result.AAE_EXT_SAC.ExtracDatos.infoCliente[0];
-      if (data) {
+// Función para exportar datos al formulario de Modulab
+function exportarDatosAModulab(modulabForm, datosDirectos = null) {
+  const aplicarEnFormulario = (data) => {
+    if (!data || !esDatoPacienteValido(data)) {
+      console.warn("[Ext-SAC-OBS] No hay datos válidos de paciente para exportar a Modulab.");
+      return;
+    }
 
+    const form = modulabForm || document.querySelector('patient-creation-dialog') || document;
 
-        const pNombre = data.nombre || data.firstName || "";
-        const pApellido1 = data.primerApellido || data.firstSurname || "";
-        const pApellido2 = data.segundoApellido || data.secondSurname || "";
+    const pNombre = data.nombre || data.firstName || "";
+    const pApellido1 = data.primerApellido || data.firstSurname || "";
+    const pApellido2 = data.segundoApellido || data.secondSurname || "";
+    const pCedula = (data.identityCard && esIdentificacionValida(data.identityCard)) ? data.identityCard : 
+                    ((data.patientID && esIdentificacionValida(data.patientID)) ? data.patientID : "");
+    const pCarne = data.studentCard || data.carnet || (pCedula && !/^\d{9}$/.test(pCedula) ? pCedula : "") || pCedula;
 
-        const firstSurnameEl = document.getElementById("FirstSurname");
-        if (firstSurnameEl) firstSurnameEl.value = pApellido1;
+    console.log("[Ext-SAC-OBS] Exportando paciente a Modulab:", { pNombre, pApellido1, pApellido2, pCedula, pCarne });
 
-        setValueAndTriggerEvent(document.getElementById("FirstSurname"), pApellido1);
-        setValueAndTriggerEvent(document.getElementById("SecondSurname"), pApellido2);
-        setValueAndTriggerEvent(document.querySelector('input[name="PatientName"]'), pNombre);
-        setValueAndTriggerEvent(document.getElementById("NSSField"), data.identityCard);
-        setValueAndTriggerEvent(document.getElementById("ExtIDField"), data.patientID);
-        setValueAndTriggerEvent(document.getElementById("NTSField"), data.ntNumber);
-        setValueAndTriggerEvent(document.getElementById("DNIField"), data.dni || data.identityCard);
+    // 1. Panel de Identificación (patient-identification-information-panel)
+    const inputPrimerApellido = form.querySelector('#FirstSurname') || form.querySelector('input[name="FirstSurname"]');
+    if (inputPrimerApellido) setValueAndTriggerEvent(inputPrimerApellido, pApellido1);
 
-        // Casilla específica para 'Exitus'
-        const exitusCheckbox = document.querySelector('input[name="Exitus"]');
-        if (exitusCheckbox) {
-          exitusCheckbox.checked = data.exitus || false;
-          exitusCheckbox.dispatchEvent(new Event("change")); // Forzar cambio de estado
-        }
+    const inputSegundoApellido = form.querySelector('#SecondSurname') || form.querySelector('input[name="SecondSurname"]');
+    if (inputSegundoApellido) setValueAndTriggerEvent(inputSegundoApellido, pApellido2);
 
-        // Selección de campos (Sexo y Fecha Nacimiento)
-        const genderInput = document.querySelector('systelab-gender-select input');
-        setValueAndTriggerEvent(genderInput, data.gender);
+    const inputNombre = form.querySelector('#PatientName') || form.querySelector('input[name="PatientName"]');
+    if (inputNombre) setValueAndTriggerEvent(inputNombre, pNombre);
 
-        const birthDatePicker = document.querySelectorAll('systelab-datepicker input');
-        if (birthDatePicker[2]) {
-          setValueAndTriggerEvent(birthDatePicker[2], data.birthDate);
+    // Nº Carnet (NSSField)
+    const inputCarnet = form.querySelector('#NSSField') || form.querySelector('input[name="NSSField"]');
+    if (inputCarnet) setValueAndTriggerEvent(inputCarnet, pCarne);
 
+    // Cédula / Identificación (ExtIDField)
+    const inputCedula = form.querySelector('#ExtIDField') || form.querySelector('input[name="ExtIDField"]');
+    if (inputCedula) setValueAndTriggerEvent(inputCedula, pCedula);
 
-          simuladorTecleo(birthDatePicker[2], data.birthDate);
-        }
+    // N° Seguro Social (PatientNHS / NTSField)
+    const inputNTS = form.querySelector('#PatientNHS') || form.querySelector('#ntsFocus') || form.querySelector('input[name="NTSField"]');
+    if (inputNTS && (data.ntNumber || data.seguroSocial)) {
+      setValueAndTriggerEvent(inputNTS, data.ntNumber || data.seguroSocial);
+    }
 
-        // Información de contacto
-        setValueAndTriggerEvent(document.querySelector('input[name="firstElement"]'), data.address);
-        setValueAndTriggerEvent(document.getElementById("countryID"), data.country);
-        setValueAndTriggerEvent(document.getElementById("cityID"), data.city);
-        setValueAndTriggerEvent(document.getElementById("provinceID"), data.province);
-        setValueAndTriggerEvent(document.getElementById("input15"), data.postalCode);
-        setValueAndTriggerEvent(document.getElementById("input17"), data.phone);
-        setValueAndTriggerEvent(document.getElementById("input20"), data.email);
-        setValueAndTriggerEvent(document.getElementById("NacionalidadField"), data.nationality);
-        setValueAndTriggerEvent(document.getElementById("PaisNacimientoField"), data.birthCountry);
-        setValueAndTriggerEvent(document.getElementById("input27"), data.location);
-      } else {
-        console.log('No se encontraron datos en infoCliente.');
+    // DNI / N/A
+    const inputDNI = form.querySelector('#DNIField') || form.querySelector('input[name="DNIField"]');
+    if (inputDNI && data.dni) {
+      setValueAndTriggerEvent(inputDNI, data.dni);
+    }
+
+    // Exitus checkbox
+    const exitusCheckbox = form.querySelector('input[name="Exitus"]');
+    if (exitusCheckbox) {
+      exitusCheckbox.checked = !!data.exitus;
+      exitusCheckbox.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+
+    // 2. Panel de Información Específica (patient-specific-information-panel)
+    // Sexo (systelab-gender-select)
+    const genderSelect = form.querySelector('systelab-gender-select');
+    if (genderSelect && data.gender) {
+      const gInput = genderSelect.querySelector('input');
+      if (gInput) {
+        gInput.removeAttribute('readonly');
+        setValueAndTriggerEvent(gInput, data.gender);
+        gInput.setAttribute('readonly', '');
+      }
+      const comboBtn = genderSelect.querySelector('.slab-combo-button, .dropdown-toggle');
+      if (comboBtn) {
+        comboBtn.click();
+        setTimeout(() => {
+          const items = document.querySelectorAll('.slab-combo-dropdown .dropdown-item, .slab-combo-dropdown li, .slab-combo-dropdown div');
+          const targetG = data.gender.toLowerCase();
+          for (const it of items) {
+            const itText = it.textContent.trim().toLowerCase();
+            if (itText === targetG || (targetG.startsWith('f') && itText.startsWith('f')) || (targetG.startsWith('m') && itText.startsWith('m'))) {
+              it.click();
+              break;
+            }
+          }
+        }, 100);
       }
     }
-  });
+
+    // Fecha de Nacimiento (systelab-datepicker no deshabilitado)
+    const birthDateInput = form.querySelector('patient-specific-information-panel systelab-datepicker:not(.is-disabled) input') ||
+                           form.querySelector('patient-specific-information-panel systelab-datepicker input:not([disabled])') ||
+                           form.querySelector('systelab-datepicker:not(.is-disabled) input');
+    if (birthDateInput && data.birthDate) {
+      setValueAndTriggerEvent(birthDateInput, data.birthDate);
+      simuladorTecleo(birthDateInput, data.birthDate);
+    }
+
+    // 3. Panel de Contacto (patient-contact-information-panel)
+    const inputDireccion = form.querySelector('input[name="firstElement"]');
+    if (inputDireccion && data.address) setValueAndTriggerEvent(inputDireccion, data.address);
+
+    const inputPais = form.querySelector('#countryID') || form.querySelector('input[name="countryID"]');
+    if (inputPais) setValueAndTriggerEvent(inputPais, data.country || "Costa Rica");
+
+    const inputCiudad = form.querySelector('#cityID') || form.querySelector('input[name="cityID"]');
+    if (inputCiudad && data.city) setValueAndTriggerEvent(inputCiudad, data.city);
+
+    const inputProvincia = form.querySelector('#provinceID') || form.querySelector('input[name="provinceID"]');
+    if (inputProvincia && data.province) setValueAndTriggerEvent(inputProvincia, data.province);
+
+    const inputCodigoPostal = form.querySelector('#input15') || form.querySelector('input[name="CodigoPostalField"]');
+    if (inputCodigoPostal && data.postalCode) setValueAndTriggerEvent(inputCodigoPostal, data.postalCode);
+
+    const inputTelefono = form.querySelector('#input17') || form.querySelector('input[name="TelefonoField"]');
+    if (inputTelefono && data.phone) setValueAndTriggerEvent(inputTelefono, data.phone);
+
+    const inputEmail = form.querySelector('#input20') || form.querySelector('input[name="EMailField"]');
+    if (inputEmail && data.email) setValueAndTriggerEvent(inputEmail, data.email);
+
+    const inputNacionalidad = form.querySelector('#NacionalidadField') || form.querySelector('input[name="NacionalidadField"]');
+    if (inputNacionalidad) setValueAndTriggerEvent(inputNacionalidad, data.nationality || "Costarricense");
+
+    const inputPaisNac = form.querySelector('#PaisNacimientoField') || form.querySelector('input[name="PaisNacimientoField"]');
+    if (inputPaisNac) setValueAndTriggerEvent(inputPaisNac, data.birthCountry || "Costa Rica");
+
+    const inputUbicacion = form.querySelector('#input27') || form.querySelector('input[name="LocalizacionField"]');
+    if (inputUbicacion && data.location) setValueAndTriggerEvent(inputUbicacion, data.location);
+
+    // 4. Si el diálogo abierto es el de filtro previo (patient-filter-dialog)
+    const filterDialog = document.querySelector('patient-filter-dialog');
+    if (filterDialog && !document.querySelector('patient-creation-dialog')) {
+      const fSurname = filterDialog.querySelector('#PatientSurname, input[name="PatientSurnameField"]');
+      const fName = filterDialog.querySelector('#PatientName, input[name="NombreField"]');
+      const fExtId = filterDialog.querySelector('#nhcFocus, input[name="ExtIDField"]');
+      const fNss = filterDialog.querySelector('#nssFocus, input[name="NSSField"]');
+
+      if (fExtId && pCedula) setValueAndTriggerEvent(fExtId, pCedula);
+      if (fSurname && pApellido1) setValueAndTriggerEvent(fSurname, pApellido1);
+      if (fName && pNombre) setValueAndTriggerEvent(fName, pNombre);
+      if (fNss && pCarne) setValueAndTriggerEvent(fNss, pCarne);
+    }
+
+    console.log("[Ext-SAC-OBS] Datos exportados a Modulab con éxito.");
+  };
+
+  if (datosDirectos) {
+    aplicarEnFormulario(datosDirectos);
+  } else {
+    chrome.storage.local.get("AAE_EXT_SAC", (result) => {
+      const info = result?.AAE_EXT_SAC?.ExtracDatos?.infoCliente;
+      if (Array.isArray(info) && info.length > 0) {
+        aplicarEnFormulario(info[0]);
+      } else {
+        console.warn("[Ext-SAC-OBS] No hay datos en storage para exportar a Modulab.");
+      }
+    });
+  }
 }
 
 const setValueAndTriggerEvent = (element, value) => {
-  if (element) {
-    element.value = value || "";
+  if (!element || value === undefined || value === null) return;
+  const valStr = String(value).trim();
+  if (!valStr) return;
 
-    // Disparar evento de entrada
-    element.dispatchEvent(new Event("input", { bubbles: true }));
+  try {
+    element.focus();
+  } catch (e) {}
 
-    // Comprobación para lanzar eventos adicionales según el tipo de campo
-    if (element.type === "date" || element.type === "datetime-local") {
-      // Disparar eventos adicionales para campos de selección de fecha
-      element.dispatchEvent(new Event("change", { bubbles: true }));
-      element.dispatchEvent(new Event("blur", { bubbles: true }));
-    } else if (element.tagName === "SELECT") {
-      // Disparar eventos adicionales para campos select
-      element.dispatchEvent(new Event("change", { bubbles: true }));
+  try {
+    // Angular 2+ property descriptor setter hook para que el binding interno reconozca el valor
+    const prototype = Object.getPrototypeOf(element);
+    const descriptor = Object.getOwnPropertyDescriptor(prototype, 'value') || 
+                       Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+    if (descriptor && descriptor.set) {
+      descriptor.set.call(element, valStr);
     } else {
-      // Disparar "focus" y "blur" para otros tipos de campo
-      element.dispatchEvent(new Event("focus", { bubbles: true }));
-      element.dispatchEvent(new Event("blur", { bubbles: true }));
+      element.value = valStr;
     }
+  } catch (e) {
+    element.value = valStr;
   }
+
+  // Disparar eventos nativos esperados por Angular / PrimeNG
+  element.dispatchEvent(new Event("input", { bubbles: true, cancelable: true }));
+  element.dispatchEvent(new Event("change", { bubbles: true, cancelable: true }));
+  element.dispatchEvent(new Event("blur", { bubbles: true }));
 };
 
 const simuladorTecleo = async (element, text) => {
-  if (element) {
-    element.focus();  // Asegura que el campo tenga el foco antes de escribir
-
-    for (const char of text) {
-      // Establece el valor parcial y simula los eventos de teclado
-      element.value += char;
-
-      // Eventos para emular la escritura
-      element.dispatchEvent(new KeyboardEvent("keydown", { key: char, bubbles: true }));
-      element.dispatchEvent(new KeyboardEvent("keypress", { key: char, bubbles: true }));
-      element.dispatchEvent(new Event("input", { bubbles: true }));
-      element.dispatchEvent(new KeyboardEvent("keyup", { key: char, bubbles: true }));
-
-      // Esperar un poco entre cada carácter para simular la velocidad de escritura
-      await new Promise(resolve => setTimeout(resolve, 50));
-    }
-
-    // Disparar eventos de finalización de escritura
-    element.dispatchEvent(new Event("change", { bubbles: true }));
-    element.dispatchEvent(new Event("blur", { bubbles: true }));
+  if (element && text) {
+    try {
+      element.focus();
+      element.value = "";
+      for (const char of text) {
+        element.value += char;
+        element.dispatchEvent(new KeyboardEvent("keydown", { key: char, bubbles: true }));
+        element.dispatchEvent(new KeyboardEvent("keypress", { key: char, bubbles: true }));
+        element.dispatchEvent(new Event("input", { bubbles: true }));
+        element.dispatchEvent(new KeyboardEvent("keyup", { key: char, bubbles: true }));
+        await new Promise(resolve => setTimeout(resolve, 25));
+      }
+      element.dispatchEvent(new Event("change", { bubbles: true }));
+      element.dispatchEvent(new Event("blur", { bubbles: true }));
+    } catch (e) {}
   }
 };
 
@@ -734,4 +895,30 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log("Recibido comando: llenarFormularioAtencionMedica");
     llenarFormularioAtencionMedica();
   }
+  if (request.action === "extractIdentificationData") {
+    console.log("[Ext-SAC-OBS] Recibido comando: extractIdentificationData");
+    extractIdentificationData().then((res) => {
+      if (sendResponse) sendResponse(res);
+    });
+    return true; // Mantiene el canal abierto para respuesta asíncrona
+  }
 });
+
+// Auto-población en Modulab cuando el usuario abre el modal "Nuevo Paciente"
+if (typeof window !== "undefined" && (location.href.includes("lab.lcucr.com") || location.href.includes(":8443") || location.href.includes("lcbsucr.obs.ucr.ac.cr"))) {
+  let debounceTimeout = null;
+  const modulabObserver = new MutationObserver(() => {
+    if (debounceTimeout) return;
+    debounceTimeout = setTimeout(() => {
+      debounceTimeout = null;
+      const creationDialog = document.querySelector('patient-creation-dialog');
+      if (creationDialog && !creationDialog.dataset.extSacAutoFilled) {
+        creationDialog.dataset.extSacAutoFilled = "true";
+        console.log("[Ext-SAC-OBS] Detectado diálogo de Nuevo Paciente en Modulab. Auto-exportando datos...");
+        exportarDatosAModulab(creationDialog);
+      }
+    }, 250);
+  });
+  modulabObserver.observe(document.body || document.documentElement, { childList: true, subtree: true });
+}
+

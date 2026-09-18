@@ -153,48 +153,94 @@ function toggleAndExecute(button, action, path, field) {
 // =============================================
 
 /**
- * Envía un mensaje a la pestaña activa
+ * Envía un mensaje a la pestaña activa con diagnóstico en consola
  * @param {string} action - Acción a ejecutar
  */
 function sendMessage(action) {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    chrome.tabs.sendMessage(tabs[0].id, { action });
+    const tab = tabs && tabs[0];
+    if (!tab) {
+      console.warn("[Ext-SAC-OBS] No hay pestaña activa. Acción no enviada:", action);
+      return;
+    }
+    chrome.tabs.sendMessage(tab.id, { action }, () => {
+      if (chrome.runtime.lastError) {
+        console.warn(
+          `[Ext-SAC-OBS] No se pudo enviar "${action}" a la pestaña ${tab.id} (${tab.url || "sin URL"}): ${chrome.runtime.lastError.message}`
+        );
+      } else {
+        console.log(`[Ext-SAC-OBS] Enviado "${action}" a la pestaña ${tab.id} (${tab.url || "sin URL"})`);
+      }
+    });
   });
 }
 
 /**
- * Envía un mensaje con argumentos a la pestaña activa
+ * Envía un mensaje con argumentos a la pestaña activa con diagnóstico en consola
  * @param {string} action - Acción a ejecutar
  * @param {any} args - Argumentos para la acción
  */
 function sendMessageWithArgs(action, args) {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    chrome.tabs.sendMessage(tabs[0].id, { action, args });
+    const tab = tabs && tabs[0];
+    if (!tab) {
+      console.warn("[Ext-SAC-OBS] No hay pestaña activa. Acción no enviada:", action);
+      return;
+    }
+    chrome.tabs.sendMessage(tab.id, { action, args }, () => {
+      if (chrome.runtime.lastError) {
+        console.warn(
+          `[Ext-SAC-OBS] No se pudo enviar "${action}" (args: ${JSON.stringify(args)}) a la pestaña ${tab.id} (${tab.url || "sin URL"}): ${chrome.runtime.lastError.message}`
+        );
+      } else {
+        console.log(`[Ext-SAC-OBS] Enviado "${action}" (args: ${JSON.stringify(args)}) a la pestaña ${tab.id} (${tab.url || "sin URL"})`);
+      }
+    });
   });
 }
 
 /**
- * Consulta datos almacenados en chrome.storage.local
+ * Consulta datos almacenados en chrome.storage.local.
+ * Reintenta varias veces para esperar a que el content script termine de guardar
+ * (evita la condición de carrera entre enviar la extracción y leer el resultado).
  * @param {string} action - Acción/clave principal
  * @param {string} path - Ruta/clave secundaria
+ * @param {number} intentos - Número de reintentos (por defecto 10)
+ * @param {number} intervalo - Milisegundos entre reintentos (por defecto 400)
  * @returns {Promise} Promesa que resuelve con los datos consultados
  */
-function ConsultaArreglo(action, path) {
+function ConsultaArreglo(action, path, intentos = 10, intervalo = 400) {
   return new Promise((resolve, reject) => {
-    chrome.storage.local.get("AAE_EXT_SAC", (result) => {
-      if (chrome.runtime.lastError) {
-        reject(chrome.runtime.lastError);
-        return;
-      }
+    const consultar = (intento) => {
+      chrome.storage.local.get("AAE_EXT_SAC", (result) => {
+        if (chrome.runtime.lastError) {
+          console.error(`[Ext-SAC-OBS] Error de storage en ConsultaArreglo("${action}", "${path}"):`, chrome.runtime.lastError);
+          reject(chrome.runtime.lastError);
+          return;
+        }
 
-      const estructuraActual = result.AAE_EXT_SAC;
+        const estructuraActual = result.AAE_EXT_SAC;
+        const datos = estructuraActual?.[action]?.[path];
 
-      if (estructuraActual?.[action]?.[path] && Array.isArray(estructuraActual[action][path])) {
-        resolve(estructuraActual[action][path][0]);
-      } else {
-        reject("La estructura no contiene los datos esperados.");
-      }
-    });
+        if (Array.isArray(datos) && datos.length > 0) {
+          console.log(`[Ext-SAC-OBS] ConsultaArreglo("${action}", "${path}") resuelto en intento ${intentos - intento}.`);
+          resolve(datos[0]);
+          return;
+        }
+
+        if (intento <= 0) {
+          console.warn(
+            `[Ext-SAC-OBS] ConsultaArreglo("${action}", "${path}") sin datos tras ${intentos} intentos.` +
+            ` estructuraActual=${JSON.stringify(estructuraActual)}`
+          );
+          reject(new Error("La estructura no contiene los datos esperados."));
+          return;
+        }
+
+        setTimeout(() => consultar(intento - 1), intervalo);
+      });
+    };
+    consultar(intentos);
   });
 }
 
@@ -224,12 +270,15 @@ runButton5.addEventListener("click", () => sendMessageWithArgs("agregarBotonATab
 
 // Botón Modulab - Extrae datos de identificación
 runButton6.addEventListener("click", async () => {
+  infoModulab.textContent = "Extrayendo datos...";
+  sendMessageWithArgs("extractIdentificationData", "modulab");
   try {
-    sendMessageWithArgs("extractIdentificationData", "modulab");
-    const nuevoTexto = await ConsultaArreglo("ExtracDatos", "infoCliente");
-    infoModulab.textContent = nuevoTexto['firstSurname'];
+    const datos = await ConsultaArreglo("ExtracDatos", "infoCliente");
+    infoModulab.textContent = datos['firstSurname'] || "Datos extraídos";
+    console.log("[Ext-SAC-OBS] Modulab: datos extraídos correctamente:", datos);
   } catch (error) {
-    console.error("Error al consultar el arreglo:", error);
+    infoModulab.textContent = "Sin datos del expediente";
+    console.error("[Ext-SAC-OBS] Modulab: error al consultar el arreglo:", error);
   }
 });
 

@@ -361,18 +361,124 @@ function buscarYExtraerDatosPaciente(rootDoc = document) {
   return null;
 }
 
+// Normaliza formatos de fecha a DD/MM/YYYY para calendarios en español
+function normalizarFecha(fechaStr) {
+  if (!fechaStr) return "";
+  const s = fechaStr.trim();
+  const mIso = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (mIso) return `${mIso[3]}/${mIso[2]}/${mIso[1]}`;
+  const mDmY = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (mDmY) {
+    return `${mDmY[1].padStart(2, "0")}/${mDmY[2].padStart(2, "0")}/${mDmY[3]}`;
+  }
+  return s;
+}
+
+// Simula la escritura y eventos de selección en inputs de calendario (PrimeNG p-calendar / systelab-datepicker)
+async function simularEntradaFecha(inputEl, fechaStr) {
+  if (!inputEl || !fechaStr) return;
+  try {
+    inputEl.focus();
+    inputEl.click();
+    await new Promise(r => setTimeout(r, 60));
+
+    // Limpiar valor actual
+    inputEl.value = "";
+    inputEl.dispatchEvent(new Event("input", { bubbles: true, cancelable: true }));
+
+    // Simular pulsaciones carácter por carácter con eventos nativos
+    for (let i = 0; i < fechaStr.length; i++) {
+      const char = fechaStr[i];
+      const charCode = char.charCodeAt(0);
+
+      inputEl.dispatchEvent(new KeyboardEvent("keydown", {
+        key: char,
+        code: char >= '0' && char <= '9' ? `Digit${char}` : 'Slash',
+        which: charCode,
+        keyCode: charCode,
+        bubbles: true,
+        cancelable: true
+      }));
+
+      inputEl.dispatchEvent(new KeyboardEvent("keypress", {
+        key: char,
+        which: charCode,
+        keyCode: charCode,
+        charCode: charCode,
+        bubbles: true,
+        cancelable: true
+      }));
+
+      let inserted = false;
+      try {
+        inserted = document.execCommand("insertText", false, char);
+      } catch (e) {}
+
+      if (!inserted) {
+        inputEl.value += char;
+      }
+
+      inputEl.dispatchEvent(new InputEvent("input", {
+        data: char,
+        inputType: "insertText",
+        bubbles: true,
+        cancelable: true
+      }));
+
+      inputEl.dispatchEvent(new KeyboardEvent("keyup", {
+        key: char,
+        code: char >= '0' && char <= '9' ? `Digit${char}` : 'Slash',
+        which: charCode,
+        keyCode: charCode,
+        bubbles: true,
+        cancelable: true
+      }));
+
+      await new Promise(r => setTimeout(r, 35));
+    }
+
+    // Asegurar que el valor final coincida
+    if (inputEl.value !== fechaStr) {
+      const prototype = Object.getPrototypeOf(inputEl);
+      const descriptor = Object.getOwnPropertyDescriptor(prototype, 'value') || 
+                         Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+      if (descriptor && descriptor.set) {
+        descriptor.set.call(inputEl, fechaStr);
+      } else {
+        inputEl.value = fechaStr;
+      }
+    }
+
+    // Disparar eventos de finalización para que PrimeNG y Angular actualicen el modelo
+    inputEl.dispatchEvent(new Event("input", { bubbles: true, cancelable: true }));
+    inputEl.dispatchEvent(new Event("change", { bubbles: true, cancelable: true }));
+    inputEl.dispatchEvent(new Event("blur", { bubbles: true }));
+
+    // Notificar también al componente p-calendar contenedor si existe
+    const pCalendar = inputEl.closest('p-calendar');
+    if (pCalendar) {
+      pCalendar.dispatchEvent(new Event("input", { bubbles: true }));
+      pCalendar.dispatchEvent(new Event("change", { bubbles: true }));
+      pCalendar.dispatchEvent(new Event("blur", { bubbles: true }));
+    }
+  } catch (e) {
+    console.warn("[Ext-SAC-OBS] Error en simularEntradaFecha:", e);
+  }
+}
+
 // Inicialización de la función para extracción de datos (retorna los datos y los guarda en storage)
 async function extractIdentificationData() {
   console.log("[Ext-SAC-OBS] Ejecutando extractIdentificationData...");
 
-  // 1. Exportar datos a Modulab si este frame contiene el formulario de Modulab
+  // 1. Si estamos en Modulab y hay formulario visible, pegar los datos al presionar el botón
   const modulabForm = document.querySelector('patient-creation-dialog') || document.querySelector('patient-filter-dialog');
   if (modulabForm) {
-    exportarDatosAModulab(modulabForm);
-    return { modulabExportado: true };
+    console.log("[Ext-SAC-OBS] Formulario de Modulab detectado. Pegando datos guardados...");
+    const ok = await exportarDatosAModulab(modulabForm);
+    return { modulabExportado: ok };
   }
 
-  // 2. Buscar en el documento y en todos los iframes hijos
+  // 2. Si estamos en SAC, buscar en el documento y en todos los iframes hijos
   const datosPaciente = buscarYExtraerDatosPaciente(document);
 
   if (datosPaciente && esDatoPacienteValido(datosPaciente)) {
@@ -426,158 +532,168 @@ function guardarDatosPaciente(datosPaciente) {
   });
 }
 
-// Función para exportar datos al formulario de Modulab
+// Función para exportar datos al formulario de Modulab (activada por el botón de Modulab)
 function exportarDatosAModulab(modulabForm, datosDirectos = null) {
-  const aplicarEnFormulario = (data) => {
-    if (!data || !esDatoPacienteValido(data)) {
-      console.warn("[Ext-SAC-OBS] No hay datos válidos de paciente para exportar a Modulab.");
-      return;
-    }
-
-    const form = modulabForm || document.querySelector('patient-creation-dialog') || document;
-
-    const pNombre = data.nombre || data.firstName || "";
-    const pApellido1 = data.primerApellido || data.firstSurname || "";
-    const pApellido2 = data.segundoApellido || data.secondSurname || "";
-    const pCedula = (data.identityCard && esIdentificacionValida(data.identityCard)) ? data.identityCard : 
-                    ((data.patientID && esIdentificacionValida(data.patientID)) ? data.patientID : "");
-    const pCarne = data.studentCard || data.carnet || (pCedula && !/^\d{9}$/.test(pCedula) ? pCedula : "") || pCedula;
-
-    console.log("[Ext-SAC-OBS] Exportando paciente a Modulab:", { pNombre, pApellido1, pApellido2, pCedula, pCarne });
-
-    // 1. Panel de Identificación (patient-identification-information-panel)
-    const inputPrimerApellido = form.querySelector('#FirstSurname') || form.querySelector('input[name="FirstSurname"]');
-    if (inputPrimerApellido) setValueAndTriggerEvent(inputPrimerApellido, pApellido1);
-
-    const inputSegundoApellido = form.querySelector('#SecondSurname') || form.querySelector('input[name="SecondSurname"]');
-    if (inputSegundoApellido) setValueAndTriggerEvent(inputSegundoApellido, pApellido2);
-
-    const inputNombre = form.querySelector('#PatientName') || form.querySelector('input[name="PatientName"]');
-    if (inputNombre) setValueAndTriggerEvent(inputNombre, pNombre);
-
-    // Nº Carnet (NSSField)
-    const inputCarnet = form.querySelector('#NSSField') || form.querySelector('input[name="NSSField"]');
-    if (inputCarnet) setValueAndTriggerEvent(inputCarnet, pCarne);
-
-    // Cédula / Identificación (ExtIDField)
-    const inputCedula = form.querySelector('#ExtIDField') || form.querySelector('input[name="ExtIDField"]');
-    if (inputCedula) setValueAndTriggerEvent(inputCedula, pCedula);
-
-    // N° Seguro Social (PatientNHS / NTSField)
-    const inputNTS = form.querySelector('#PatientNHS') || form.querySelector('#ntsFocus') || form.querySelector('input[name="NTSField"]');
-    if (inputNTS && (data.ntNumber || data.seguroSocial)) {
-      setValueAndTriggerEvent(inputNTS, data.ntNumber || data.seguroSocial);
-    }
-
-    // DNI / N/A
-    const inputDNI = form.querySelector('#DNIField') || form.querySelector('input[name="DNIField"]');
-    if (inputDNI && data.dni) {
-      setValueAndTriggerEvent(inputDNI, data.dni);
-    }
-
-    // Exitus checkbox
-    const exitusCheckbox = form.querySelector('input[name="Exitus"]');
-    if (exitusCheckbox) {
-      exitusCheckbox.checked = !!data.exitus;
-      exitusCheckbox.dispatchEvent(new Event("change", { bubbles: true }));
-    }
-
-    // 2. Panel de Información Específica (patient-specific-information-panel)
-    // Sexo (systelab-gender-select)
-    const genderSelect = form.querySelector('systelab-gender-select');
-    if (genderSelect && data.gender) {
-      const gInput = genderSelect.querySelector('input');
-      if (gInput) {
-        gInput.removeAttribute('readonly');
-        setValueAndTriggerEvent(gInput, data.gender);
-        gInput.setAttribute('readonly', '');
+  return new Promise((resolve) => {
+    const aplicarEnFormulario = async (data) => {
+      if (!data || !esDatoPacienteValido(data)) {
+        console.warn("[Ext-SAC-OBS] No hay datos válidos de paciente para exportar a Modulab.");
+        resolve(false);
+        return;
       }
-      const comboBtn = genderSelect.querySelector('.slab-combo-button, .dropdown-toggle');
-      if (comboBtn) {
-        comboBtn.click();
-        setTimeout(() => {
-          const items = document.querySelectorAll('.slab-combo-dropdown .dropdown-item, .slab-combo-dropdown li, .slab-combo-dropdown div');
-          const targetG = data.gender.toLowerCase();
-          for (const it of items) {
-            const itText = it.textContent.trim().toLowerCase();
-            if (itText === targetG || (targetG.startsWith('f') && itText.startsWith('f')) || (targetG.startsWith('m') && itText.startsWith('m'))) {
-              it.click();
-              break;
+
+      const form = modulabForm || document.querySelector('patient-creation-dialog') || document.querySelector('patient-filter-dialog') || document;
+
+      const pNombre = data.nombre || data.firstName || "";
+      const pApellido1 = data.primerApellido || data.firstSurname || "";
+      const pApellido2 = data.segundoApellido || data.secondSurname || "";
+      const pCedula = (data.identityCard && esIdentificacionValida(data.identityCard)) ? data.identityCard : 
+                      ((data.patientID && esIdentificacionValida(data.patientID)) ? data.patientID : "");
+      const pCarne = data.studentCard || data.carnet || (pCedula && !/^\d{9}$/.test(pCedula) ? pCedula : "") || pCedula;
+      const pFechaNac = normalizarFecha(data.birthDate);
+
+      console.log("[Ext-SAC-OBS] Pegando paciente en Modulab:", { pNombre, pApellido1, pApellido2, pCedula, pCarne, pFechaNac });
+
+      // 1. Panel de Identificación (patient-identification-information-panel)
+      const inputPrimerApellido = form.querySelector('#FirstSurname') || form.querySelector('input[name="FirstSurname"]');
+      if (inputPrimerApellido) setValueAndTriggerEvent(inputPrimerApellido, pApellido1);
+
+      const inputSegundoApellido = form.querySelector('#SecondSurname') || form.querySelector('input[name="SecondSurname"]');
+      if (inputSegundoApellido) setValueAndTriggerEvent(inputSegundoApellido, pApellido2);
+
+      const inputNombre = form.querySelector('#PatientName') || form.querySelector('input[name="PatientName"]');
+      if (inputNombre) setValueAndTriggerEvent(inputNombre, pNombre);
+
+      // Nº Carnet (NSSField)
+      const inputCarnet = form.querySelector('#NSSField') || form.querySelector('input[name="NSSField"]');
+      if (inputCarnet) setValueAndTriggerEvent(inputCarnet, pCarne);
+
+      // Cédula / Identificación (ExtIDField)
+      const inputCedula = form.querySelector('#ExtIDField') || form.querySelector('input[name="ExtIDField"]');
+      if (inputCedula) setValueAndTriggerEvent(inputCedula, pCedula);
+
+      // N° Seguro Social (PatientNHS / NTSField)
+      const inputNTS = form.querySelector('#PatientNHS') || form.querySelector('#ntsFocus') || form.querySelector('input[name="NTSField"]');
+      if (inputNTS && (data.ntNumber || data.seguroSocial)) {
+        setValueAndTriggerEvent(inputNTS, data.ntNumber || data.seguroSocial);
+      }
+
+      // DNI / N/A
+      const inputDNI = form.querySelector('#DNIField') || form.querySelector('input[name="DNIField"]');
+      if (inputDNI && data.dni) {
+        setValueAndTriggerEvent(inputDNI, data.dni);
+      }
+
+      // Exitus checkbox
+      const exitusCheckbox = form.querySelector('input[name="Exitus"]');
+      if (exitusCheckbox) {
+        exitusCheckbox.checked = !!data.exitus;
+        exitusCheckbox.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+
+      // 2. Panel de Información Específica (patient-specific-information-panel)
+      // Sexo (systelab-gender-select)
+      const genderSelect = form.querySelector('systelab-gender-select');
+      if (genderSelect && data.gender) {
+        const gInput = genderSelect.querySelector('input');
+        if (gInput) {
+          gInput.removeAttribute('readonly');
+          setValueAndTriggerEvent(gInput, data.gender);
+          gInput.setAttribute('readonly', '');
+        }
+        const comboBtn = genderSelect.querySelector('.slab-combo-button, .dropdown-toggle');
+        if (comboBtn) {
+          comboBtn.click();
+          setTimeout(() => {
+            const items = document.querySelectorAll('.slab-combo-dropdown .dropdown-item, .slab-combo-dropdown li, .slab-combo-dropdown div');
+            const targetG = data.gender.toLowerCase();
+            for (const it of items) {
+              const itText = it.textContent.trim().toLowerCase();
+              if (itText === targetG || (targetG.startsWith('f') && itText.startsWith('f')) || (targetG.startsWith('m') && itText.startsWith('m'))) {
+                it.click();
+                break;
+              }
             }
-          }
-        }, 100);
+          }, 100);
+        }
       }
-    }
 
-    // Fecha de Nacimiento (systelab-datepicker no deshabilitado)
-    const birthDateInput = form.querySelector('patient-specific-information-panel systelab-datepicker:not(.is-disabled) input') ||
-                           form.querySelector('patient-specific-information-panel systelab-datepicker input:not([disabled])') ||
-                           form.querySelector('systelab-datepicker:not(.is-disabled) input');
-    if (birthDateInput && data.birthDate) {
-      setValueAndTriggerEvent(birthDateInput, data.birthDate);
-      simuladorTecleo(birthDateInput, data.birthDate);
-    }
+      // Fecha de Nacimiento (simulación de escritura en el calendario de Javascript)
+      const birthDateInput = form.querySelector('patient-specific-information-panel systelab-datepicker:not(.is-disabled) input:not([disabled])') ||
+                             form.querySelector('patient-specific-information-panel input.p-inputtext:not([disabled])') ||
+                             form.querySelector('systelab-datepicker input.p-inputtext:not([disabled])') ||
+                             form.querySelector('#dob input.p-inputtext') ||
+                             form.querySelector('input.p-inputtext:not([disabled])');
 
-    // 3. Panel de Contacto (patient-contact-information-panel)
-    const inputDireccion = form.querySelector('input[name="firstElement"]');
-    if (inputDireccion && data.address) setValueAndTriggerEvent(inputDireccion, data.address);
-
-    const inputPais = form.querySelector('#countryID') || form.querySelector('input[name="countryID"]');
-    if (inputPais) setValueAndTriggerEvent(inputPais, data.country || "Costa Rica");
-
-    const inputCiudad = form.querySelector('#cityID') || form.querySelector('input[name="cityID"]');
-    if (inputCiudad && data.city) setValueAndTriggerEvent(inputCiudad, data.city);
-
-    const inputProvincia = form.querySelector('#provinceID') || form.querySelector('input[name="provinceID"]');
-    if (inputProvincia && data.province) setValueAndTriggerEvent(inputProvincia, data.province);
-
-    const inputCodigoPostal = form.querySelector('#input15') || form.querySelector('input[name="CodigoPostalField"]');
-    if (inputCodigoPostal && data.postalCode) setValueAndTriggerEvent(inputCodigoPostal, data.postalCode);
-
-    const inputTelefono = form.querySelector('#input17') || form.querySelector('input[name="TelefonoField"]');
-    if (inputTelefono && data.phone) setValueAndTriggerEvent(inputTelefono, data.phone);
-
-    const inputEmail = form.querySelector('#input20') || form.querySelector('input[name="EMailField"]');
-    if (inputEmail && data.email) setValueAndTriggerEvent(inputEmail, data.email);
-
-    const inputNacionalidad = form.querySelector('#NacionalidadField') || form.querySelector('input[name="NacionalidadField"]');
-    if (inputNacionalidad) setValueAndTriggerEvent(inputNacionalidad, data.nationality || "Costarricense");
-
-    const inputPaisNac = form.querySelector('#PaisNacimientoField') || form.querySelector('input[name="PaisNacimientoField"]');
-    if (inputPaisNac) setValueAndTriggerEvent(inputPaisNac, data.birthCountry || "Costa Rica");
-
-    const inputUbicacion = form.querySelector('#input27') || form.querySelector('input[name="LocalizacionField"]');
-    if (inputUbicacion && data.location) setValueAndTriggerEvent(inputUbicacion, data.location);
-
-    // 4. Si el diálogo abierto es el de filtro previo (patient-filter-dialog)
-    const filterDialog = document.querySelector('patient-filter-dialog');
-    if (filterDialog && !document.querySelector('patient-creation-dialog')) {
-      const fSurname = filterDialog.querySelector('#PatientSurname, input[name="PatientSurnameField"]');
-      const fName = filterDialog.querySelector('#PatientName, input[name="NombreField"]');
-      const fExtId = filterDialog.querySelector('#nhcFocus, input[name="ExtIDField"]');
-      const fNss = filterDialog.querySelector('#nssFocus, input[name="NSSField"]');
-
-      if (fExtId && pCedula) setValueAndTriggerEvent(fExtId, pCedula);
-      if (fSurname && pApellido1) setValueAndTriggerEvent(fSurname, pApellido1);
-      if (fName && pNombre) setValueAndTriggerEvent(fName, pNombre);
-      if (fNss && pCarne) setValueAndTriggerEvent(fNss, pCarne);
-    }
-
-    console.log("[Ext-SAC-OBS] Datos exportados a Modulab con éxito.");
-  };
-
-  if (datosDirectos) {
-    aplicarEnFormulario(datosDirectos);
-  } else {
-    chrome.storage.local.get("AAE_EXT_SAC", (result) => {
-      const info = result?.AAE_EXT_SAC?.ExtracDatos?.infoCliente;
-      if (Array.isArray(info) && info.length > 0) {
-        aplicarEnFormulario(info[0]);
-      } else {
-        console.warn("[Ext-SAC-OBS] No hay datos en storage para exportar a Modulab.");
+      if (birthDateInput && pFechaNac) {
+        await simularEntradaFecha(birthDateInput, pFechaNac);
       }
-    });
-  }
+
+      // 3. Panel de Contacto (patient-contact-information-panel)
+      const inputDireccion = form.querySelector('input[name="firstElement"]');
+      if (inputDireccion && data.address) setValueAndTriggerEvent(inputDireccion, data.address);
+
+      const inputPais = form.querySelector('#countryID') || form.querySelector('input[name="countryID"]');
+      if (inputPais) setValueAndTriggerEvent(inputPais, data.country || "Costa Rica");
+
+      const inputCiudad = form.querySelector('#cityID') || form.querySelector('input[name="cityID"]');
+      if (inputCiudad && data.city) setValueAndTriggerEvent(inputCiudad, data.city);
+
+      const inputProvincia = form.querySelector('#provinceID') || form.querySelector('input[name="provinceID"]');
+      if (inputProvincia && data.province) setValueAndTriggerEvent(inputProvincia, data.province);
+
+      const inputCodigoPostal = form.querySelector('#input15') || form.querySelector('input[name="CodigoPostalField"]');
+      if (inputCodigoPostal && data.postalCode) setValueAndTriggerEvent(inputCodigoPostal, data.postalCode);
+
+      const inputTelefono = form.querySelector('#input17') || form.querySelector('input[name="TelefonoField"]');
+      if (inputTelefono && data.phone) setValueAndTriggerEvent(inputTelefono, data.phone);
+
+      const inputEmail = form.querySelector('#input20') || form.querySelector('input[name="EMailField"]');
+      if (inputEmail && data.email) setValueAndTriggerEvent(inputEmail, data.email);
+
+      const inputNacionalidad = form.querySelector('#NacionalidadField') || form.querySelector('input[name="NacionalidadField"]');
+      if (inputNacionalidad) setValueAndTriggerEvent(inputNacionalidad, data.nationality || "Costarricense");
+
+      const inputPaisNac = form.querySelector('#PaisNacimientoField') || form.querySelector('input[name="PaisNacimientoField"]');
+      if (inputPaisNac) setValueAndTriggerEvent(inputPaisNac, data.birthCountry || "Costa Rica");
+
+      const inputUbicacion = form.querySelector('#input27') || form.querySelector('input[name="LocalizacionField"]');
+      if (inputUbicacion && data.location) setValueAndTriggerEvent(inputUbicacion, data.location);
+
+      // 4. Si el diálogo abierto es el de filtro previo (patient-filter-dialog)
+      const filterDialog = document.querySelector('patient-filter-dialog');
+      if (filterDialog && !document.querySelector('patient-creation-dialog')) {
+        const fSurname = filterDialog.querySelector('#PatientSurname, input[name="PatientSurnameField"]');
+        const fName = filterDialog.querySelector('#PatientName, input[name="NombreField"]');
+        const fExtId = filterDialog.querySelector('#nhcFocus, input[name="ExtIDField"]');
+        const fNss = filterDialog.querySelector('#nssFocus, input[name="NSSField"]');
+        const fDob = filterDialog.querySelector('#dob input.p-inputtext');
+
+        if (fExtId && pCedula) setValueAndTriggerEvent(fExtId, pCedula);
+        if (fSurname && pApellido1) setValueAndTriggerEvent(fSurname, pApellido1);
+        if (fName && pNombre) setValueAndTriggerEvent(fName, pNombre);
+        if (fNss && pCarne) setValueAndTriggerEvent(fNss, pCarne);
+        if (fDob && pFechaNac) await simularEntradaFecha(fDob, pFechaNac);
+      }
+
+      console.log("[Ext-SAC-OBS] Datos pegados en Modulab con éxito.");
+      resolve(true);
+    };
+
+    if (datosDirectos) {
+      aplicarEnFormulario(datosDirectos);
+    } else {
+      chrome.storage.local.get("AAE_EXT_SAC", async (result) => {
+        const info = result?.AAE_EXT_SAC?.ExtracDatos?.infoCliente;
+        if (Array.isArray(info) && info.length > 0) {
+          await aplicarEnFormulario(info[0]);
+        } else {
+          console.warn("[Ext-SAC-OBS] No hay datos guardados en storage para Modulab.");
+          resolve(false);
+        }
+      });
+    }
+  });
 }
 
 const setValueAndTriggerEvent = (element, value) => {
@@ -904,21 +1020,5 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
-// Auto-población en Modulab cuando el usuario abre el modal "Nuevo Paciente"
-if (typeof window !== "undefined" && (location.href.includes("lab.lcucr.com") || location.href.includes(":8443") || location.href.includes("lcbsucr.obs.ucr.ac.cr"))) {
-  let debounceTimeout = null;
-  const modulabObserver = new MutationObserver(() => {
-    if (debounceTimeout) return;
-    debounceTimeout = setTimeout(() => {
-      debounceTimeout = null;
-      const creationDialog = document.querySelector('patient-creation-dialog');
-      if (creationDialog && !creationDialog.dataset.extSacAutoFilled) {
-        creationDialog.dataset.extSacAutoFilled = "true";
-        console.log("[Ext-SAC-OBS] Detectado diálogo de Nuevo Paciente en Modulab. Auto-exportando datos...");
-        exportarDatosAModulab(creationDialog);
-      }
-    }, 250);
-  });
-  modulabObserver.observe(document.body || document.documentElement, { childList: true, subtree: true });
-}
+
 

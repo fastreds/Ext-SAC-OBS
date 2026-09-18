@@ -344,8 +344,8 @@ runButton6.addEventListener("click", async () => {
         for (const r of results) {
           const d = r?.result;
           if (d?.modulabExportado) {
-            infoModulab.textContent = "Datos exportados a Modulab";
-            console.log("[Ext-SAC-OBS] Modulab: datos exportados al formulario en frame.");
+            infoModulab.textContent = "Datos pegados en Modulab";
+            console.log("[Ext-SAC-OBS] Modulab: datos pegados en el formulario.");
             return;
           }
           if (d && (d.fullName || d.nombreCompleto || d.primerApellido || d.firstSurname || d.nombre || d.firstName)) {

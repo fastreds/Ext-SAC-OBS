@@ -32,30 +32,48 @@ async function extractIdentificationData() {
 
 // Función para extraer datos del expediente
 function extraerDatosDeExpediente(container) {
-  const fullName = container.querySelector('.card-label.font-weight-bold.text-dark-75')?.textContent.trim();
-  const nameParts = fullName.split(' ');
-  const firstName = nameParts.slice(2).join(' ');
-  const lastName = nameParts.slice(0, 2).join(' ').split(" ");
-  const identification = container.querySelector('.d-flex.align-items-center.justify-content-between span.text-muted')?.textContent.trim();
-  const dobText = container.querySelectorAll('[class="text-muted"]');
-  const dateOfBirth = dobText[2].textContent.match(/\d{2}\/\d{2}\/\d{4}/)[0];
-  const Sexo = dobText[3].textContent;
-  const email = container.querySelector('div.d-flex.align-items-center.justify-content-between:nth-of-type(4) .text-muted')?.textContent.trim();
-  const phoneText = container.querySelector('div.d-flex.align-items-center.justify-content-between:nth-of-type(5) .text-muted')?.textContent.trim();
-  const phone = phoneText ? phoneText.split(' ') : [];
-  const studentCard = container.querySelector('div.d-flex.align-items-center.justify-content-between:nth-of-type(6) .text-muted')?.textContent.trim();
-
-  return {
-    firstSurname: firstName,
-    secondSurname: lastName[1],
-    firstName: lastName[0],
-    patientID: identification,
-    identityCard: studentCard,
-    gender: Sexo,
-    birthDate: dateOfBirth,
-    phone: phone[0],
-    email: email
+  const resultado = {
+    firstSurname: "",
+    secondSurname: "",
+    firstName: "",
+    patientID: "",
+    identityCard: "",
+    gender: "",
+    birthDate: "",
+    phone: "",
+    email: ""
   };
+
+  try {
+    const fullName = container.querySelector('.card-label.font-weight-bold.text-dark-75')?.textContent.trim();
+    if (fullName) {
+      const nameParts = fullName.split(' ');
+      const firstName = nameParts.slice(2).join(' ');
+      const lastName = nameParts.slice(0, 2).join(' ').split(" ");
+      resultado.firstName = firstName;
+      resultado.secondSurname = lastName[1] || "";
+      resultado.firstSurname = lastName[0] || "";
+    }
+
+    resultado.patientID = container.querySelector('.d-flex.align-items-center.justify-content-between span.text-muted')?.textContent.trim() || "";
+
+    const dobText = container.querySelectorAll('[class="text-muted"]');
+    const fechaMatch = dobText[2]?.textContent.match(/\d{2}\/\d{2}\/\d{4}/);
+    resultado.birthDate = fechaMatch ? fechaMatch[0] : "";
+    resultado.gender = dobText[3]?.textContent.trim() || "";
+
+    const email = container.querySelector('div.d-flex.align-items-center.justify-content-between:nth-of-type(4) .text-muted')?.textContent.trim();
+    resultado.email = email || "";
+
+    const phoneText = container.querySelector('div.d-flex.align-items-center.justify-content-between:nth-of-type(5) .text-muted')?.textContent.trim();
+    resultado.phone = phoneText ? phoneText.split(' ')[0] || "" : "";
+
+    resultado.identityCard = container.querySelector('div.d-flex.align-items-center.justify-content-between:nth-of-type(6) .text-muted')?.textContent.trim() || "";
+  } catch (e) {
+    console.warn("Extracción de expediente incompleta (posible cambio en el DOM del sitio):", e);
+  }
+
+  return resultado;
 }
 
 // Función para extraer datos de la agenda
@@ -434,8 +452,15 @@ function setSelectValue(id, value) {
 
 
 
-// Inicializar script de ayuda en la página
+// Inicializar script de ayuda en la página (solo si existe el formulario de incidentes)
 function initPageScript() {
+  const hayFormularioIncidentes = !!(
+    document.getElementById('unidad_amb') ||
+    document.getElementById('tripulante_1_id') ||
+    document.getElementById('informacion_incidente')
+  );
+  if (!hayFormularioIncidentes) return;
+
   const script = document.createElement('script');
   script.src = chrome.runtime.getURL('trigger_select2.js');
   script.onload = function () {

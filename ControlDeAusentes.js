@@ -110,7 +110,7 @@ function BuscaAusentes() {
       return;
     }
 
-    var elementos = document.getElementsByClassName("fc-timegrid-event");
+    var elementos = eventosDelCalendario();
     let activarSonido = false;
 
     // Extrae la fecha visible en pantalla
@@ -150,7 +150,7 @@ function BuscaAusentes() {
     ];
 
     for (var dato of elementos) {
-      if (dato.style["background-color"] === color) {
+      if (bgMatches(dato, color)) {
         const timeText = dato
           .querySelector(".fc-event-time")
           ?.textContent.trim();
@@ -223,9 +223,9 @@ function BuscaAusentes() {
 
 // Función para extraer la fecha visible en la pantalla
 function extraeFechaEnPantalla() {
-  const fechaTexto = document
-    .querySelector("h2.fc-toolbar-title")
-    .textContent.trim();
+  const titulo = document.querySelector("h2.fc-toolbar-title");
+  if (!titulo) return null;
+  const fechaTexto = titulo.textContent.trim();
   //console.log("Fecha original:", fechaTexto);
 
   const meses = [

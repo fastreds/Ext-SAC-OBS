@@ -385,22 +385,21 @@ const CHECK_COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24 horas: máximo 1 consulta a
 const UPDATE_URL = "https://raw.githubusercontent.com/fastreds/Ext-SAC-OBS/main/manifest.json";
 
 /**
- * Muestra el resultado guardado sin hacer ninguna petición de red.
- * Solo dispara una consulta la primera vez (si aún no hay nada almacenado).
+ * Muestra el resultado ya guardado SIN hacer peticiones de red.
+ * El service worker comprueba la versión al iniciar el navegador y guarda el
+ * resultado; aquí solo se lee, por lo que el popup abre al instante.
  */
 function showStoredUpdate() {
   const currentVersion = manifestData.version;
-  if (updateStatus) {
-    updateStatus.style.color = "#888";
-    updateStatus.textContent = "Comprobando actualizaciones...";
-  }
   chrome.storage.local.get(CACHE_KEY, (result) => {
     const cache = result[CACHE_KEY];
     if (cache && cache.latestVersion) {
       showUpdateUI(currentVersion, cache.latestVersion);
     } else {
-      // Primera ejecución: una sola comprobación para sembrar la caché
-      fetchLatest(false);
+      // Sin caché todavía: no se muestra nada ni se toca la red
+      // (el service worker la sembrará al iniciar el navegador).
+      if (updateStatus) updateStatus.textContent = "";
+      if (updateInstructions) updateInstructions.style.display = "none";
     }
   });
 }
@@ -409,17 +408,19 @@ function showStoredUpdate() {
  * Consulta GitHub. Respeta un enfriamiento de 24 h salvo que force=true
  * (botón manual del usuario). Esto evita saturar/banear en muchas PCs.
  */
-function fetchLatest(force) {
+function fetchLatest(force, onDone) {
   if (updateStatus) {
     updateStatus.style.color = "#888";
-    updateStatus.textContent = force ? "Buscando actualizaciones..." : "Comprobando actualizaciones...";
+    updateStatus.textContent = force ? "Buscando actualizaciones..." : "";
   }
+  const finalizar = () => { if (typeof onDone === "function") onDone(); };
   chrome.storage.local.get(LAST_CHECK_KEY, (res) => {
     const now = Date.now();
     const last = res[LAST_CHECK_KEY] || 0;
     if (!force && (now - last < CHECK_COOLDOWN_MS)) {
       // Dentro del enfriamiento: mostrar lo ya guardado sin tocar la red
       showStoredUpdate();
+      finalizar();
       return;
     }
 
@@ -435,6 +436,7 @@ function fetchLatest(force) {
           [LAST_CHECK_KEY]: now
         }, () => {
           showUpdateUI(manifestData.version, latestVersion);
+          finalizar();
         });
       })
       .catch(error => {
@@ -444,6 +446,7 @@ function fetchLatest(force) {
             updateStatus.style.color = "#d9534f";
             updateStatus.textContent = "No se pudo verificar (revisa tu conexión).";
           }
+          finalizar();
           return;
         }
         // Si falla sin ser forzado, mostramos la caché previa si existe
@@ -454,6 +457,7 @@ function fetchLatest(force) {
             updateStatus.style.color = "#d9534f";
             updateStatus.textContent = "No se pudo verificar la versión.";
           }
+          finalizar();
         });
       });
   });
@@ -462,7 +466,13 @@ function fetchLatest(force) {
 // Botón discreto de búsqueda manual (el usuario decide cuándo)
 if (btnCheckUpdates) {
   btnCheckUpdates.addEventListener("click", () => {
-    fetchLatest(true);
+    btnCheckUpdates.disabled = true;
+    btnCheckUpdates.textContent = "Buscando...";
+    const terminar = () => {
+      btnCheckUpdates.disabled = false;
+      btnCheckUpdates.textContent = "↻ Buscar actualizaciones";
+    };
+    fetchLatest(true, terminar);
   });
 }
 
@@ -481,6 +491,11 @@ function showUpdateUI(current, latest) {
   }
 }
 
-// Al abrir el popup solo se muestra el resultado ya guardado (sin saturar la red)
-showStoredUpdate();
+// Al abrir el popup solo se muestra el resultado ya guardado (sin tocar la red).
+// Se difiere la lectura para no competir con el render inicial del popup.
+if ("requestIdleCallback" in window) {
+  requestIdleCallback(showStoredUpdate, { timeout: 200 });
+} else {
+  setTimeout(showStoredUpdate, 0);
+}
 

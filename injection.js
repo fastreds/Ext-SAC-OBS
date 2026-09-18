@@ -2,7 +2,6 @@
 //window.testVariable = true
 
 
-console.clear();
 generaArrayGlobal();
 
 ///////////////////////////////////////// constante global para gestionar botones y datos extraidos ////////////
@@ -116,3 +115,26 @@ chrome.storage.local.get("AAE_EXT_SAC", (result) => {
  });
 
 } /// fin sonido
+
+
+ //////////////////////////////////// helpers de compatibilidad ////////////////////////////////////
+
+ // Compara el color de fondo calculado de un elemento con un color rgb().
+ // Funciona aunque el color venga de una clase CSS, de un hex o de un estilo inline
+ // (getComputedStyle siempre devuelve rgb()/rgba()).
+ function bgMatches(element, rgbTarget) {
+   if (!element) return false;
+   try {
+     const computed = getComputedStyle(element).backgroundColor;
+     if (!computed) return false;
+     // Normalizar espaciado para comparar con el objetivo
+     return computed.replace(/\s+/g, ' ').trim() === rgbTarget;
+   } catch (e) {
+     return false;
+   }
+ }
+
+ // Devuelve los eventos del calendario (compatible FullCalendar v5 y v6)
+ function eventosDelCalendario() {
+   return document.querySelectorAll('.fc-timegrid-event, .fc-event');
+ }

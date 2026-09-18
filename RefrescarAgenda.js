@@ -47,7 +47,7 @@ function ListaPacientesPendientes() {
     function infoDePacientes(value, index, array) {
       const elem = document.getElementById(value)
   
-      console.log(elem.text)
+      if (elem) console.log(elem.textContent)
     }
   }
 
@@ -55,12 +55,12 @@ function ListaPacientesPendientes() {
 
 function BusquedaDeCita() {
     var color = "rgb(228, 123, 254)" // color morado de esrado presente
-    var elementos = document.getElementsByClassName("fc-timegrid-event")
+    var elementos = eventosDelCalendario()
     var i = 0
     var nuevaCitas = [] // contiene el id de las citas con estado presente. "morado"
   
     for (dato of elementos) {
-      if (dato.style["background-color"] == color) {
+      if (bgMatches(dato, color)) {
         nuevaCitas[i] = dato.id
         i++
       }
@@ -77,7 +77,7 @@ function contador() {
   
 
     var testCalendar = !!document.getElementById("refreshCal");
-    const agendaTitulo = !!document.querySelector("h3.todo-blue");
+    const agendaTitulo = document.querySelector("h3.todo-blue");
        
     // Verificar si el elemento fue encontrado y contiene "Agenda de citas diarias"
     if (agendaTitulo && agendaTitulo.textContent.includes("Agenda de citas diarias")) {

@@ -11,17 +11,15 @@ function agregarBotonATabla(tipo,detalle) {
     if (!tableBody) return;
    
   
-    var date = new Date()
+    var date = new Date();
     let rows = tableBody.getElementsByTagName("tr");
-    fechaActual =     date.getDate() +       "/" +      ("0" + (date.getMonth() + 1)).slice(-2) +      "/" +      ("0" + date.getFullYear()).slice(-2) ;
+    const fechaActual = date.getDate() + "/" + ("0" + (date.getMonth() + 1)).slice(-2) + "/" + ("0" + date.getFullYear()).slice(-2);
     let EsAdministrador = 0;
   
-      //elimna los botones existentes 
-  
-      for (let i = 0; i < rows.length; i++) {
+    // Elimina los botones existentes 
+    for (let i = 0; i < rows.length; i++) {
         let buttonCell = rows[i].querySelector('.custom-action-button');
         if (buttonCell) {
-            // Elimina la celda que contiene el botón
             let cellToRemove = buttonCell.closest("td");
             if (cellToRemove) {
                 cellToRemove.remove();
@@ -29,29 +27,30 @@ function agregarBotonATabla(tipo,detalle) {
         }
     }
   
-    
-  
-    /// verifica el si tabla contiene checkbox para determinar con esto si es un administrador
+    // Verifica si la tabla contiene checkbox para determinar si es un administrador
     var checkboxes = tableBody.querySelectorAll('input[type="checkbox"]');
-    if (checkboxes.length > 0) {  EsAdministrador = 1;   }
-  
+    if (checkboxes.length > 0) {  EsAdministrador = 1; }
+    const a = EsAdministrador ? 1 : 0;
   
     for (let i = 0; i < rows.length; i++) {
+        // Omitir filas sin datos o con columnas insuficientes
+        if (rows[i].classList.contains("dataTables_empty") || rows[i].cells.length < (5 + a)) {
+            continue;
+        }
+
         if (!rows[i].querySelector('.custom-action-button')) {
             let newButton = document.createElement("button");
             newButton.innerHTML = tipo;
             newButton.classList.add("btn", "btn-sm", "btn-primary", "custom-action-button");
   
-            if(EsAdministrador)  a = 1; else  a = 0;
             newButton.addEventListener("click", function() {
-                let nombre =    rows[i].cells[2+a].textContent;
-                let apellidos = rows[i].cells[1+a].textContent;
-                let cedula = rows[i].cells[3+a].textContent;
-                let fechaNacimiento = rows[i].cells[4+a].textContent;
-                let telefono_px = rows[i].cells[6+a].textContent;
+                let nombre = rows[i].cells[2+a]?.textContent?.trim() || "";
+                let apellidos = rows[i].cells[1+a]?.textContent?.trim() || "";
+                let cedula = rows[i].cells[3+a]?.textContent?.trim() || "";
+                let fechaNacimiento = rows[i].cells[4+a]?.textContent?.trim() || "";
+                let telefono_px = rows[i].cells[6+a]?.textContent?.trim() || "";
   
-                imprimirDatos(tipo,nombre, cedula, fechaNacimiento,apellidos,detalle, fechaActual,telefono_px);
-                
+                imprimirDatos(tipo, nombre, cedula, fechaNacimiento, apellidos, detalle, fechaActual, telefono_px);
             });
   
             let newCell = document.createElement("td");
@@ -88,7 +87,7 @@ function agregarBotonATabla(tipo,detalle) {
       return resultado;
   }
     ///case del tipo de etiqueta 
-     contenido = "sin contenido";
+    let contenido = "sin contenido";
      
    ////////////// Recepcion ///////
   switch (tipo) {
@@ -310,16 +309,26 @@ function agregarBotonATabla(tipo,detalle) {
      
   
     let ventanaImpresion = window.open('', '_blank');
-    ventanaImpresion.document.open();
-    ventanaImpresion.document.write(contenido);
-    ventanaImpresion.document.close();
-    setTimeout(function() {
-        ventanaImpresion.print();
-        ventanaImpresion.close();
-    }, 500);
-  
-  
+    if (!ventanaImpresion) {
+        alert("Por favor permite las ventanas emergentes (popups) en tu navegador para imprimir la etiqueta.");
+        return;
+    }
+    try {
+        ventanaImpresion.document.open();
+        ventanaImpresion.document.write(contenido);
+        ventanaImpresion.document.close();
+        setTimeout(function() {
+            try {
+                ventanaImpresion.print();
+                ventanaImpresion.close();
+            } catch (e) {
+                console.warn("No se pudo invocar print() automáticamente:", e);
+            }
+        }, 500);
+    } catch (e) {
+        console.error("Error al escribir en la ventana de impresión:", e);
+    }
   }
-  }
+}
   
   

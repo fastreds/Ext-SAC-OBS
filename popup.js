@@ -164,22 +164,23 @@ function sendMessage(action) {
       return;
     }
     chrome.tabs.sendMessage(tab.id, { action }, () => {
-      if (chrome.runtime.lastError) {
-        console.warn(
-          `[Ext-SAC-OBS] No se pudo enviar "${action}" a la pestaña ${tab.id} (${tab.url || "sin URL"}): ${chrome.runtime.lastError.message}`
-        );
-      } else {
-        console.log(`[Ext-SAC-OBS] Enviado "${action}" a la pestaña ${tab.id} (${tab.url || "sin URL"})`);
-      }
+      if (chrome.runtime.lastError) {}
     });
+
+    if (chrome.scripting && chrome.scripting.executeScript) {
+      chrome.scripting.executeScript({
+        target: { tabId: tab.id, allFrames: true },
+        func: (act) => {
+          if (act === "popupCicloDeAgenda" && typeof popupCicloDeAgenda === "function") popupCicloDeAgenda();
+          if (act === "BuscaAusentes" && typeof GestionBuscaAusentes === "function") GestionBuscaAusentes();
+          if (act === "valoracionesAlertRefresh" && typeof verificarEstadoServicioEmergencias === "function") verificarEstadoServicioEmergencias();
+        },
+        args: [action]
+      }).catch(() => {});
+    }
   });
 }
 
-/**
- * Envía un mensaje con argumentos a la pestaña activa con diagnóstico en consola
- * @param {string} action - Acción a ejecutar
- * @param {any} args - Argumentos para la acción
- */
 function sendMessageWithArgs(action, args) {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const tab = tabs && tabs[0];
@@ -188,14 +189,20 @@ function sendMessageWithArgs(action, args) {
       return;
     }
     chrome.tabs.sendMessage(tab.id, { action, args }, () => {
-      if (chrome.runtime.lastError) {
-        console.warn(
-          `[Ext-SAC-OBS] No se pudo enviar "${action}" (args: ${JSON.stringify(args)}) a la pestaña ${tab.id} (${tab.url || "sin URL"}): ${chrome.runtime.lastError.message}`
-        );
-      } else {
-        console.log(`[Ext-SAC-OBS] Enviado "${action}" (args: ${JSON.stringify(args)}) a la pestaña ${tab.id} (${tab.url || "sin URL"})`);
-      }
+      if (chrome.runtime.lastError) {}
     });
+
+    if (chrome.scripting && chrome.scripting.executeScript) {
+      chrome.scripting.executeScript({
+        target: { tabId: tab.id, allFrames: true },
+        func: (act, ags) => {
+          if (act === "extractIdentificationData" && typeof extractIdentificationData === "function") extractIdentificationData();
+          if (act === "agregarBotonATabla" && typeof agregarBotonATabla === "function") agregarBotonATabla(ags[0], ags[1]);
+          if (act === "llenarFormularioAtencionMedica" && typeof llenarFormularioAtencionMedica === "function") llenarFormularioAtencionMedica();
+        },
+        args: [action, args]
+      }).catch(() => {});
+    }
   });
 }
 
@@ -268,14 +275,89 @@ runButton2.addEventListener("click", () => {
 runButton4.addEventListener("click", () => sendMessageWithArgs("agregarBotonATabla", ["Correo", ""]));
 runButton5.addEventListener("click", () => sendMessageWithArgs("agregarBotonATabla", ["Archivo", ""]));
 
+// Helper para formatear el nombre completo del paciente sin cortes
+function formatearNombrePaciente(d) {
+  if (!d || typeof d !== "object") return "";
+
+  // 1. Si viene nombre completo directo
+  if (d.fullName && typeof d.fullName === "string" && d.fullName.trim().length > 0) {
+    return d.fullName.trim();
+  }
+  if (d.nombreCompleto && typeof d.nombreCompleto === "string" && d.nombreCompleto.trim().length > 0) {
+    return d.nombreCompleto.trim();
+  }
+
+  // 2. Concatenar apellidos y nombres disponibles
+  const partes = [];
+  const apellido1 = (d.primerApellido || d.firstSurname || "").trim();
+  const apellido2 = (d.segundoApellido || d.secondSurname || "").trim();
+  const nombre = (d.nombre || d.firstName || "").trim();
+
+  if (apellido1) partes.push(apellido1);
+  if (apellido2) partes.push(apellido2);
+  if (nombre) partes.push(nombre);
+
+  if (partes.length > 0) {
+    return partes.join(" ");
+  }
+
+  return d.identityCard || d.patientID || "Datos extraídos";
+}
+
+// Cargar el último paciente extraído al abrir el popup si ya existe en storage
+chrome.storage.local.get("AAE_EXT_SAC", (result) => {
+  const infoCliente = result.AAE_EXT_SAC?.ExtracDatos?.infoCliente;
+  if (Array.isArray(infoCliente) && infoCliente.length > 0) {
+    const nombre = formatearNombrePaciente(infoCliente[0]);
+    if (nombre) {
+      infoModulab.textContent = nombre;
+    }
+  }
+});
+
 // Botón Modulab - Extrae datos de identificación
 runButton6.addEventListener("click", async () => {
   infoModulab.textContent = "Extrayendo datos...";
+
+  // 1. Intentar ejecución directa en todos los frames
+  try {
+    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    const tab = tabs && tabs[0];
+    if (tab && chrome.scripting) {
+      const results = await chrome.scripting.executeScript({
+        target: { tabId: tab.id, allFrames: true },
+        func: () => {
+          if (typeof extractIdentificationData === "function") {
+            return extractIdentificationData();
+          }
+          return null;
+        }
+      });
+      console.log("[Ext-SAC-OBS] Resultados de extracción directa en frames:", results);
+
+      if (Array.isArray(results)) {
+        for (const r of results) {
+          const d = r?.result;
+          if (d && (d.fullName || d.nombreCompleto || d.primerApellido || d.firstSurname || d.nombre || d.firstName)) {
+            const nombreCompleto = formatearNombrePaciente(d);
+            infoModulab.textContent = nombreCompleto;
+            console.log("[Ext-SAC-OBS] Modulab: datos resueltos directamente desde frame:", d);
+            return;
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.warn("[Ext-SAC-OBS] executeScript directo no disponible o falló:", e);
+  }
+
+  // 2. Fallback: Enviar mensaje y consultar almacenamiento con reintentos
   sendMessageWithArgs("extractIdentificationData", "modulab");
   try {
-    const datos = await ConsultaArreglo("ExtracDatos", "infoCliente");
-    infoModulab.textContent = datos['firstSurname'] || "Datos extraídos";
-    console.log("[Ext-SAC-OBS] Modulab: datos extraídos correctamente:", datos);
+    const datos = await ConsultaArreglo("ExtracDatos", "infoCliente", 12, 350);
+    const nombreCompleto = formatearNombrePaciente(datos);
+    infoModulab.textContent = nombreCompleto;
+    console.log("[Ext-SAC-OBS] Modulab: datos extraídos correctamente desde storage:", datos);
   } catch (error) {
     infoModulab.textContent = "Sin datos del expediente";
     console.error("[Ext-SAC-OBS] Modulab: error al consultar el arreglo:", error);

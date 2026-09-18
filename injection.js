@@ -119,22 +119,59 @@ chrome.storage.local.get("AAE_EXT_SAC", (result) => {
 
  //////////////////////////////////// helpers de compatibilidad ////////////////////////////////////
 
- // Compara el color de fondo calculado de un elemento con un color rgb().
- // Funciona aunque el color venga de una clase CSS, de un hex o de un estilo inline
- // (getComputedStyle siempre devuelve rgb()/rgba()).
- function bgMatches(element, rgbTarget) {
-   if (!element) return false;
-   try {
-     const computed = getComputedStyle(element).backgroundColor;
-     if (!computed) return false;
-     // Normalizar espaciado para comparar con el objetivo
-     return computed.replace(/\s+/g, ' ').trim() === rgbTarget;
-   } catch (e) {
-     return false;
+ function parseRgb(colorStr) {
+   if (!colorStr) return null;
+   const m = colorStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+   if (m) {
+     return { r: parseInt(m[1], 10), g: parseInt(m[2], 10), b: parseInt(m[3], 10) };
    }
+   return null;
  }
 
- // Devuelve los eventos del calendario (compatible FullCalendar v5 y v6)
+ function colorDiferencia(p1, p2) {
+   if (!p1 || !p2) return Infinity;
+   return Math.abs(p1.r - p2.r) + Math.abs(p1.g - p2.g) + Math.abs(p1.b - p2.b);
+ }
+
+ // Compara el color de fondo de un elemento con un color rgbTarget.
+ // Funciona con rgb(), rgba(), inline styles o clases CSS tanto en el elemento
+ // como en sus hijos internos de FullCalendar (.fc-event-main).
+ function bgMatches(element, rgbTarget) {
+   if (!element) return false;
+   const targetParsed = parseRgb(rgbTarget);
+   if (!targetParsed) return false;
+
+   const elementsToCheck = [
+     element,
+     element.querySelector?.('.fc-event-main'),
+     element.querySelector?.('.fc-event-main-frame')
+   ].filter(Boolean);
+
+   for (const el of elementsToCheck) {
+     try {
+       // 1. Verificar estilo inline
+       if (el.style && el.style.backgroundColor) {
+         const parsedInline = parseRgb(el.style.backgroundColor);
+         if (parsedInline && colorDiferencia(parsedInline, targetParsed) <= 15) {
+           return true;
+         }
+       }
+       // 2. Verificar getComputedStyle
+       const computed = getComputedStyle(el).backgroundColor;
+       if (computed && computed !== 'transparent' && computed !== 'rgba(0, 0, 0, 0)') {
+         const parsedComputed = parseRgb(computed);
+         if (parsedComputed && colorDiferencia(parsedComputed, targetParsed) <= 15) {
+           return true;
+         }
+       }
+     } catch (e) {
+       // ignorar error de elemento desconectado
+     }
+   }
+   return false;
+ }
+
+ // Devuelve los eventos del calendario (compatible con FullCalendar v3, v4, v5 y v6 en vistas de día, semana y mes)
  function eventosDelCalendario() {
-   return document.querySelectorAll('.fc-timegrid-event, .fc-event');
+   return document.querySelectorAll('.fc-timegrid-event, .fc-event, .fc-daygrid-event, [data-event-id]');
  }

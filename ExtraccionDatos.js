@@ -1,41 +1,139 @@
-// Inicialización de la función para extracción de datos
-async function extractIdentificationData() {
-  console.log("Función Extracción de datos.");
+// Valida si un objeto de datos de paciente contiene información sustancial
+function esDatoPacienteValido(datos) {
+  if (!datos || typeof datos !== "object") return false;
+  return !!(
+    (datos.firstSurname && datos.firstSurname.trim().length > 0) ||
+    (datos.primerApellido && datos.primerApellido.trim().length > 0) ||
+    (datos.firstName && datos.firstName.trim().length > 0) ||
+    (datos.nombre && datos.nombre.trim().length > 0) ||
+    (datos.identityCard && datos.identityCard.trim().length > 0) ||
+    (datos.patientID && datos.patientID.trim().length > 0)
+  );
+}
 
+// Busca elementos popover o modales de cita en un documento
+function buscarPopover(doc) {
+  if (!doc) return null;
+  const selectors = [
+    '.popover.my-popover-appointment-options',
+    '.popover.show',
+    '.popover',
+    '.my-popover-appointment-options',
+    '.fc-popover',
+    '.tippy-box',
+    '[role="tooltip"]',
+    '.modal.show',
+    '.modal-dialog'
+  ];
+  for (const sel of selectors) {
+    try {
+      const elements = doc.querySelectorAll(sel);
+      for (const el of elements) {
+        const text = el.textContent ? el.textContent.toLowerCase() : "";
+        if (text.includes("identificación") || text.includes("identificacion") || 
+            text.includes("carné") || text.includes("carne") || 
+            text.includes("f. nacimiento") || text.includes("nombre")) {
+          return el;
+        }
+      }
+    } catch (e) {}
+  }
+  return null;
+}
 
-  // Extraer datos de la sección de expediente
-  const container = document.querySelector('.card-body.pt-4');
-  if (container) {
-    const datosPaciente = extraerDatosDeExpediente(container);
-    guardarDatosPaciente(datosPaciente);
-  } else {
-    console.log("No se encuentra visualizando un expediente");
+// Función para extraer datos de la agenda (popover de cita)
+function extraerDatosDeAgenda(popoverContainer) {
+  if (!popoverContainer) return null;
+  const html = popoverContainer.innerHTML || "";
+  const textContent = popoverContainer.textContent || "";
+
+  // 1. Nombre
+  let fullName = "";
+  const fullNameMatch = html.match(/Nombre\s*:\s*(?:<span[^>]*>)?([^<]+)/i) ||
+                        textContent.match(/Nombre\s*:\s*([^\n\r]+)/i);
+  if (fullNameMatch) {
+    fullName = fullNameMatch[1].trim();
   }
 
-  // Extraer datos de la agenda
-  const popoverContainer = document.querySelector('.popover.my-popover-appointment-options');
-  if (popoverContainer) {
-    const datosPaciente = extraerDatosDeAgenda(popoverContainer);
-    guardarDatosPaciente(datosPaciente);
-  } else {
-    console.log("No se realizó extracción de datos de la agenda");
+  const cleanFullName = fullName.split("(")[0].trim();
+  let firstName = "";
+  let firstSurname = "";
+  let secondSurname = "";
+
+  if (cleanFullName) {
+    const words = cleanFullName.split(/\s+/);
+    if (words.length >= 3) {
+      secondSurname = words[words.length - 1];
+      firstSurname = words[words.length - 2];
+      firstName = words.slice(0, words.length - 2).join(" ");
+    } else if (words.length === 2) {
+      firstSurname = words[1];
+      firstName = words[0];
+    } else {
+      firstName = cleanFullName;
+    }
   }
 
-  // Exportar datos a Modulab si está disponible
-  const modulabForm = document.querySelector('patient-creation-dialog');
-  if (modulabForm) {
-    exportarDatosAModulab(modulabForm);
-  } else {
-    console.log("No se encuentra en Modulab");
-  }
+  // 2. Identificación
+  const idMatch = html.match(/Identificación\s*:\s*(?:<span[^>]*>)?(\d+)/i) ||
+                  textContent.match(/Identificación\s*:\s*(\d+)/i) ||
+                  textContent.match(/Identificacion\s*:\s*(\d+)/i);
+  const id = idMatch ? idMatch[1].trim() : "";
+
+  // 3. Carné
+  const studentCardMatch = html.match(/Carné estudiantil:\s*(?:<span[^>]*>)?([A-Za-z0-9]+)/i) ||
+                           textContent.match(/Carné(?:\s+estudiantil)?\s*:\s*([A-Za-z0-9]+)/i) ||
+                           textContent.match(/Carne(?:\s+estudiantil)?\s*:\s*([A-Za-z0-9]+)/i);
+  const studentCard = studentCardMatch ? studentCardMatch[1].trim() : "";
+
+  // 4. Fecha de nacimiento
+  const dobMatch = html.match(/F\.?\s*Nacimiento\s*:\s*(?:<span[^>]*>)?(\d{2}\/\d{2}\/\d{4})/i) ||
+                   textContent.match(/F\.?\s*Nacimiento\s*:\s*(\d{2}\/\d{2}\/\d{4})/i) ||
+                   textContent.match(/\b(\d{2}\/\d{2}\/\d{4})\b/);
+  const dobitrhday = dobMatch ? (dobMatch[1] || dobMatch[0]).trim() : "";
+
+  // 5. Email
+  const emailMatch = html.match(/Email\s*:\s*(?:<span[^>]*>)?([\w.%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/i) ||
+                     textContent.match(/[\w.%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
+  const email = emailMatch ? (emailMatch[1] || emailMatch[0]).trim() : "";
+
+  // 6. Teléfono
+  const phoneMatch = html.match(/Teléfono Celular\s*:\s*(?:<span[^>]*>)?(\d+)/i) ||
+                     html.match(/Teléfono\s*:\s*(?:<span[^>]*>)?(\d+)/i) ||
+                     textContent.match(/Teléfono(?:\s+Celular)?\s*:\s*(\d+)/i) ||
+                     textContent.match(/\b([24678]\d{7})\b/);
+  const phone = phoneMatch ? (phoneMatch[1] || phoneMatch[0]).trim() : "";
+
+  return {
+    fullName: cleanFullName,
+    nombreCompleto: cleanFullName,
+    firstSurname: firstSurname,
+    primerApellido: firstSurname,
+    secondSurname: secondSurname,
+    segundoApellido: secondSurname,
+    firstName: firstName,
+    nombre: firstName,
+    patientID: id,
+    identityCard: studentCard || id,
+    birthDate: dobitrhday,
+    phone: phone,
+    email: email
+  };
 }
 
 // Función para extraer datos del expediente
-function extraerDatosDeExpediente(container) {
+function extraerDatosDeExpediente(doc) {
+  if (!doc) return null;
+
   const resultado = {
+    fullName: "",
+    nombreCompleto: "",
     firstSurname: "",
+    primerApellido: "",
     secondSurname: "",
+    segundoApellido: "",
     firstName: "",
+    nombre: "",
     patientID: "",
     identityCard: "",
     gender: "",
@@ -45,76 +143,219 @@ function extraerDatosDeExpediente(container) {
   };
 
   try {
-    const fullName = container.querySelector('.card-label.font-weight-bold.text-dark-75')?.textContent.trim();
-    if (fullName) {
-      const nameParts = fullName.split(' ');
-      const firstName = nameParts.slice(2).join(' ');
-      const lastName = nameParts.slice(0, 2).join(' ').split(" ");
-      resultado.firstName = firstName;
-      resultado.secondSurname = lastName[1] || "";
-      resultado.firstSurname = lastName[0] || "";
+    // Buscar contenedor que parezca un expediente
+    const containers = doc.querySelectorAll(
+      '.card, .card-body, .portlet, .portlet-body, #demographics, #patient_summary, .patient-card, .tab-pane.active'
+    );
+
+    let searchRoot = null;
+    for (const c of containers) {
+      const text = c.textContent.toLowerCase();
+      if ((text.includes("identificación") || text.includes("identificacion") || text.includes("cédula") || text.includes("cedula") || text.includes("carné") || text.includes("expediente")) &&
+          (text.includes("nacimiento") || text.includes("edad") || text.includes("sexo") || text.includes("género") || text.includes("genero"))) {
+        searchRoot = c;
+        break;
+      }
     }
 
-    resultado.patientID = container.querySelector('.d-flex.align-items-center.justify-content-between span.text-muted')?.textContent.trim() || "";
+    if (!searchRoot) {
+      // Fallback a card-body o documento entero
+      searchRoot = doc.querySelector('.card-body.pt-4') || doc.querySelector('#demographics') || doc;
+    }
 
-    const dobText = container.querySelectorAll('[class="text-muted"]');
-    const fechaMatch = dobText[2]?.textContent.match(/\d{2}\/\d{2}\/\d{4}/);
-    resultado.birthDate = fechaMatch ? fechaMatch[0] : "";
-    resultado.gender = dobText[3]?.textContent.trim() || "";
+    // Nombre completo del paciente
+    const fullNameElem = searchRoot.querySelector('.card-label.font-weight-bold.text-dark-75') ||
+                         searchRoot.querySelector('.card-label.font-weight-bolder') ||
+                         searchRoot.querySelector('.card-label') ||
+                         searchRoot.querySelector('.patient-name, #patient_name, #pat_name') ||
+                         searchRoot.querySelector('h3.card-title, h4.card-title, .card-title') ||
+                         searchRoot.querySelector('.text-dark-75');
 
-    const email = container.querySelector('div.d-flex.align-items-center.justify-content-between:nth-of-type(4) .text-muted')?.textContent.trim();
-    resultado.email = email || "";
+    const fullName = fullNameElem?.textContent.trim();
+    if (fullName) {
+      const cleanName = fullName.replace(/^(paciente|cliente)\s*:?/i, '').trim();
+      resultado.fullName = cleanName;
+      resultado.nombreCompleto = cleanName;
+      const parts = cleanName.split(/\s+/);
+      if (parts.length >= 3) {
+        resultado.primerApellido = parts[0];
+        resultado.segundoApellido = parts[1];
+        resultado.nombre = parts.slice(2).join(' ');
+        resultado.firstSurname = parts[0];
+        resultado.secondSurname = parts[1];
+        resultado.firstName = parts.slice(2).join(' ');
+      } else if (parts.length === 2) {
+        resultado.primerApellido = parts[0];
+        resultado.nombre = parts[1];
+        resultado.firstSurname = parts[0];
+        resultado.firstName = parts[1];
+      } else {
+        resultado.nombre = cleanName;
+        resultado.firstName = cleanName;
+      }
+    }
 
-    const phoneText = container.querySelector('div.d-flex.align-items-center.justify-content-between:nth-of-type(5) .text-muted')?.textContent.trim();
-    resultado.phone = phoneText ? phoneText.split(' ')[0] || "" : "";
+    // Extracción de campos en items o filas
+    const items = searchRoot.querySelectorAll('.d-flex, tr, .row, dl, div');
+    for (const item of items) {
+      const text = item.textContent.trim();
+      const textLower = text.toLowerCase();
 
-    resultado.identityCard = container.querySelector('div.d-flex.align-items-center.justify-content-between:nth-of-type(6) .text-muted')?.textContent.trim() || "";
+      // Cédula / Identificación / Carné
+      if (!resultado.identityCard && (textLower.includes("cédula") || textLower.includes("cedula") || textLower.includes("carné") || textLower.includes("carne") || textLower.includes("identificación") || textLower.includes("identificacion"))) {
+        const m = text.match(/[A-Za-z0-9\-_]{6,}/);
+        if (m) {
+          resultado.identityCard = m[0];
+          if (!resultado.patientID) resultado.patientID = m[0];
+        }
+      }
+
+      // Fecha de nacimiento
+      if (!resultado.birthDate && (textLower.includes("nacimiento") || textLower.includes("f. nac") || textLower.includes("dob"))) {
+        const m = text.match(/\b\d{1,2}\/\d{1,2}\/\d{4}\b/);
+        if (m) resultado.birthDate = m[0];
+      }
+
+      // Sexo / Género
+      if (!resultado.gender && (textLower.includes("sexo") || textLower.includes("género") || textLower.includes("genero"))) {
+        if (textLower.includes("masculino") || textLower.includes("hombre") || textLower.match(/\b(m)\b/)) {
+          resultado.gender = "Masculino";
+        } else if (textLower.includes("femenino") || textLower.includes("mujer") || textLower.match(/\b(f)\b/)) {
+          resultado.gender = "Femenino";
+        }
+      }
+
+      // Teléfono / Celular
+      if (!resultado.phone && (textLower.includes("tel") || textLower.includes("celular") || textLower.includes("movil"))) {
+        const m = text.match(/\b[24678]\d{3}[-\s]?\d{4}\b/) || text.match(/\b\d{8,10}\b/);
+        if (m) resultado.phone = m[0].replace(/\s+/g, '');
+      }
+
+      // Email
+      if (!resultado.email && (textLower.includes("email") || textLower.includes("correo") || text.includes("@"))) {
+        const m = text.match(/[\w.%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
+        if (m) resultado.email = m[0];
+      }
+    }
+
+    // Fallbacks si algún dato no se extrajo
+    if (!resultado.birthDate) {
+      const m = searchRoot.textContent.match(/\b\d{2}\/\d{2}\/\d{4}\b/);
+      if (m) resultado.birthDate = m[0];
+    }
+    if (!resultado.email) {
+      const m = searchRoot.textContent.match(/[\w.%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
+      if (m) resultado.email = m[0];
+    }
+    if (!resultado.patientID) {
+      resultado.patientID = searchRoot.querySelector('.d-flex.align-items-center.justify-content-between span.text-muted')?.textContent.trim() || "";
+    }
   } catch (e) {
-    console.warn("Extracción de expediente incompleta (posible cambio en el DOM del sitio):", e);
+    console.warn("[Ext-SAC-OBS] Error en extracción de expediente:", e);
   }
 
   return resultado;
 }
 
-// Función para extraer datos de la agenda
-function extraerDatosDeAgenda(popoverContainer) {
-  const fullNameMatch = popoverContainer.innerHTML.match(/Nombre\s*:\s*<span[^>]*>(.*?)<\/span>/);
-  const fullName = fullNameMatch ? fullNameMatch[1].trim() : null;
-  const fullName0 = fullName.split("(")[0].trim();
-  const words = fullName0.split(" ");
-  const apellidos = words.slice(-2).join(" ").split(" ");
-  const fullName2 = words.slice(0, -2).join(" ");
-  const idMatch = popoverContainer.innerHTML.match(/Identificación\s*:\s*(\d+)/);
-  const id = idMatch ? idMatch[1] : null;
-  const studentCardMatch = popoverContainer.innerHTML.match(/Carné estudiantil:\s*([A-Za-z0-9]+)/);
-  const studentCard = studentCardMatch ? studentCardMatch[1] : null;
-  const dobMatch = popoverContainer.innerHTML.match(/F. Nacimiento\s*:\s*(\d{2}\/\d{2}\/\d{4})/);
-  const dobitrhday = dobMatch ? dobMatch[1] : null;
-  const emailMatch = popoverContainer.innerHTML.match(/Email\s*:\s*([\w.%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/);
-  const email = emailMatch ? emailMatch[1] : null;
-  const phoneMatch = popoverContainer.innerHTML.match(/Teléfono Celular\s*:\s*(\d+)/);
-  const phone = phoneMatch ? phoneMatch[1] : null;
+// Busca y extrae datos de paciente en doc y en sus iframes recursivamente
+function buscarYExtraerDatosPaciente(rootDoc = document) {
+  // 1. Probar popover en este documento
+  const popover = buscarPopover(rootDoc);
+  if (popover) {
+    const datos = extraerDatosDeAgenda(popover);
+    if (esDatoPacienteValido(datos)) {
+      return datos;
+    }
+  }
 
-  return {
-    firstSurname: fullName2,
-    secondSurname: apellidos[1],
-    firstName: apellidos[0],
-    patientID: id,
-    identityCard: studentCard,
-    birthDate: dobitrhday,
-    phone: phone,
-    email: email
-  };
+  // 2. Probar sección de expediente en este documento
+  const datosExp = extraerDatosDeExpediente(rootDoc);
+  if (esDatoPacienteValido(datosExp)) {
+    return datosExp;
+  }
+
+  // 3. Probar en iframes hijos directos del mismo origen
+  try {
+    const iframes = rootDoc.querySelectorAll('iframe, frame');
+    for (const iframe of iframes) {
+      try {
+        const doc = iframe.contentDocument || iframe.contentWindow?.document;
+        if (doc) {
+          const resIframe = buscarYExtraerDatosPaciente(doc);
+          if (resIframe && esDatoPacienteValido(resIframe)) {
+            return resIframe;
+          }
+        }
+      } catch (e) {
+        // Ignorar iframes de distinto origen
+      }
+    }
+  } catch (e) {}
+
+  return null;
 }
+
+// Inicialización de la función para extracción de datos (retorna los datos y los guarda en storage)
+async function extractIdentificationData() {
+  console.log("[Ext-SAC-OBS] Ejecutando extractIdentificationData...");
+
+  // Buscar en el documento y en todos los iframes hijos
+  const datosPaciente = buscarYExtraerDatosPaciente(document);
+
+  if (datosPaciente && esDatoPacienteValido(datosPaciente)) {
+    guardarDatosPaciente(datosPaciente);
+    console.log("[Ext-SAC-OBS] Datos de paciente extraídos y guardados con éxito:", datosPaciente);
+    return datosPaciente;
+  }
+
+  // Exportar datos a Modulab si está disponible en este frame
+  const modulabForm = document.querySelector('patient-creation-dialog');
+  if (modulabForm) {
+    exportarDatosAModulab(modulabForm);
+    return { modulabExportado: true };
+  }
+
+  console.log("[Ext-SAC-OBS] No se encontraron datos válidos de expediente ni popover en este frame.");
+  return null;
+}
+
+// Auto-captura al hacer clic en eventos del calendario o popovers
+document.addEventListener("click", (e) => {
+  const isCalendarOrPopover = e.target.closest?.(
+    '.fc-event, .fc-timegrid-event, .fc-daygrid-event, [data-event-id], .popover, .my-popover-appointment-options'
+  );
+  if (isCalendarOrPopover) {
+    setTimeout(() => {
+      const datos = buscarYExtraerDatosPaciente(document);
+      if (datos && esDatoPacienteValido(datos)) {
+        guardarDatosPaciente(datos);
+        console.log("[Ext-SAC-OBS] Auto-captura de cita en clic exitosa:", datos);
+      }
+    }, 350);
+  }
+}, true);
+
+// Auto-captura al cargar la página si es un expediente
+function intentarAutoExtraccion() {
+  const datos = buscarYExtraerDatosPaciente(document);
+  if (datos && esDatoPacienteValido(datos)) {
+    guardarDatosPaciente(datos);
+    console.log("[Ext-SAC-OBS] Auto-captura de expediente al cargar:", datos);
+  }
+}
+setTimeout(intentarAutoExtraccion, 1200);
+setTimeout(intentarAutoExtraccion, 3500);
 
 // Función para guardar los datos en chrome.storage
 function guardarDatosPaciente(datosPaciente) {
+  if (!esDatoPacienteValido(datosPaciente)) return;
+
   chrome.storage.local.get("AAE_EXT_SAC", (result) => {
     const AAE_EXT_SAC = result.AAE_EXT_SAC || { ExtracDatos: { infoCliente: [] } };
-    AAE_EXT_SAC.ExtracDatos.infoCliente = []; //limpiamos el contenido previo
-    AAE_EXT_SAC.ExtracDatos.infoCliente.push(datosPaciente);
+    AAE_EXT_SAC.ExtracDatos = AAE_EXT_SAC.ExtracDatos || {};
+    AAE_EXT_SAC.ExtracDatos.infoCliente = [datosPaciente];
     chrome.storage.local.set({ AAE_EXT_SAC }, () => {
-      console.log('Datos guardados en infoCliente:', datosPaciente);
+      console.log('[Ext-SAC-OBS] Datos guardados en infoCliente:', datosPaciente);
     });
   });
 }
@@ -127,15 +368,20 @@ function exportarDatosAModulab(modulabForm) {
       if (data) {
 
 
-        document.getElementById("FirstSurname").value = data.firstName || "";
+        const pNombre = data.nombre || data.firstName || "";
+        const pApellido1 = data.primerApellido || data.firstSurname || "";
+        const pApellido2 = data.segundoApellido || data.secondSurname || "";
 
-        setValueAndTriggerEvent(document.getElementById("FirstSurname"), data.firstName);
-        setValueAndTriggerEvent(document.getElementById("SecondSurname"), data.secondSurname);
-        setValueAndTriggerEvent(document.querySelector('input[name="PatientName"]'), data.firstSurname);
+        const firstSurnameEl = document.getElementById("FirstSurname");
+        if (firstSurnameEl) firstSurnameEl.value = pApellido1;
+
+        setValueAndTriggerEvent(document.getElementById("FirstSurname"), pApellido1);
+        setValueAndTriggerEvent(document.getElementById("SecondSurname"), pApellido2);
+        setValueAndTriggerEvent(document.querySelector('input[name="PatientName"]'), pNombre);
         setValueAndTriggerEvent(document.getElementById("NSSField"), data.identityCard);
         setValueAndTriggerEvent(document.getElementById("ExtIDField"), data.patientID);
         setValueAndTriggerEvent(document.getElementById("NTSField"), data.ntNumber);
-        setValueAndTriggerEvent(document.getElementById("DNIField"), data.dni);
+        setValueAndTriggerEvent(document.getElementById("DNIField"), data.dni || data.identityCard);
 
         // Casilla específica para 'Exitus'
         const exitusCheckbox = document.querySelector('input[name="Exitus"]');

@@ -54,48 +54,48 @@ function ListaPacientesPendientes() {
 ////////////////////////////busca los elementos en la agenda que contiene un paciente listo para atender////////////////////////////////
 
 function BusquedaDeCita() {
-    var color = "rgb(228, 123, 254)" // color morado de esrado presente
-    var elementos = eventosDelCalendario()
-    var i = 0
-    var nuevaCitas = [] // contiene el id de las citas con estado presente. "morado"
+    var color = "rgb(228, 123, 254)"; // color morado de estado presente
+    var elementos = eventosDelCalendario();
+    var i = 0;
+    var nuevaCitas = []; // contiene el id de las citas con estado presente. "morado"
   
-    for (dato of elementos) {
+    for (const dato of elementos) {
       if (bgMatches(dato, color)) {
-        nuevaCitas[i] = dato.id
-        i++
+        nuevaCitas[i] = dato.id;
+        i++;
       }
     }
-    if (i) sonido()
-    console.log("nuevas citas: " + i + ". Id's: " + nuevaCitas)
-    datosDelaCita = nuevaCitas
-    return nuevaCitas
+    if (i) sonido();
+    console.log("nuevas citas: " + i + ". Id's: " + nuevaCitas);
+    return nuevaCitas;
   }
   
 
 //////////////////////////////////////////// funcion general sobre el ciclo de la agenda/////////////////
 function contador() {
-  
-
     var testCalendar = !!document.getElementById("refreshCal");
-    const agendaTitulo = document.querySelector("h3.todo-blue");
        
-    // Verificar si el elemento fue encontrado y contiene "Agenda de citas diarias"
-    if (agendaTitulo && agendaTitulo.textContent.includes("Agenda de citas diarias")) {
-          console.log("No se encuentra visualiando una agenda / Se encuentra en citas diarias /  ");
-          return;
-      } 
+    // Si se encuentra en citas diarias, este refresco general no debe operar
+    const enCitasDiarias = typeof esAgendaCitasDiarias === "function"
+      ? esAgendaCitasDiarias()
+      : Array.from(document.querySelectorAll("h1, h2, h3, h4, .card-title, .page-title, .todo-blue"))
+          .some(h => h && h.textContent && h.textContent.toLowerCase().includes("agenda de citas diarias"));
+
+    if (enCitasDiarias) {
+      console.log("No se encuentra visualizando una agenda general / Se encuentra en citas diarias");
+      return;
+    } 
+
     //valida si estamos en la agenda
     if (testCalendar) {
-    
-      
       //refresca la agenda
-      var refrescarAgenda = document.getElementById("refreshCal")
-      refrescarAgenda.click();
+      var refrescarAgenda = document.getElementById("refreshCal");
+      if (refrescarAgenda) refrescarAgenda.click();
 
       //busca una cita
-      ListaPacientesPendientes()
-    } else console.log("No se encuentra visualiando una agenda")
-  
-   
+      ListaPacientesPendientes();
+    } else {
+      console.log("No se encuentra visualizando una agenda");
+    }
   }
   

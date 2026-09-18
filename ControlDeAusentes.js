@@ -72,6 +72,17 @@ function ActivaBuscaAusentes() {
   });
 }
 
+// Función auxiliar para detectar si la pantalla actual corresponde a la agenda de citas diarias
+function esAgendaCitasDiarias() {
+  const headings = document.querySelectorAll("h1, h2, h3, h4, .card-title, .page-title, .todo-blue");
+  for (const h of headings) {
+    if (h && h.textContent && h.textContent.toLowerCase().includes("agenda de citas diarias")) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // Busca los eventos ausentes según la agenda y los eventos en pantalla
 function BuscaAusentes() {
   var testCalendar = !!document.getElementById("refreshCal");
@@ -89,13 +100,8 @@ function BuscaAusentes() {
   esperar(3000, () => {
     // esperamos a que refrescar la agenda
 
-    const agendaTitulo = document.querySelector("h3.todo-blue");
-
-    // Verificar si el elemento fue encontrado y contiene "Agenda de citas diarias"
-    if (
-      agendaTitulo &&
-      agendaTitulo.textContent.includes("Agenda de citas diarias")
-    ) {
+    // Verificar si contiene "Agenda de citas diarias" en cualquier encabezado de la página
+    if (esAgendaCitasDiarias()) {
       console.log("La etiqueta 'Agenda de citas diarias' ha sido encontrada.");
     } else {
       console.log(
@@ -117,27 +123,16 @@ function BuscaAusentes() {
     const fechaEnPantalla = extraeFechaEnPantalla();
     const now = fechaEnPantalla ? new Date(fechaEnPantalla) : new Date();
 
-    // Comparar las fechas (sin la hora para una comparación más exacta)
+    // Comparar las fechas (sin la hora para una comparación exacta de día)
     const fechaActual = new Date();
+    const fechaCompActual = new Date(fechaActual);
+    fechaCompActual.setHours(0, 0, 0, 0);
 
-    // Conservar la fecha de "now" pero actualizar su hora a la actual
-
-    fechaActual.setHours(
-      fechaActual.getHours(),
-      fechaActual.getMinutes(),
-      fechaActual.getSeconds(),
-      fechaActual.getMilliseconds()
-    );
-
-    now.setHours(
-      fechaActual.getHours(),
-      fechaActual.getMinutes(),
-      fechaActual.getSeconds(),
-      fechaActual.getMilliseconds()
-    );
+    const fechaCompPantalla = new Date(now);
+    fechaCompPantalla.setHours(0, 0, 0, 0);
 
     // Si las fechas son diferentes, salimos de la función
-    if (now.getTime() !== fechaActual.getTime()) {
+    if (fechaCompPantalla.getTime() !== fechaCompActual.getTime()) {
       console.log(
         "La fecha en pantalla es diferente a la fecha actual. Saliendo de la función buscar ausentes."
       );
@@ -147,20 +142,23 @@ function BuscaAusentes() {
     const regexList = [
       /(\d+):(\d+)\s*(a\.?\s?m\.?|p\.?\s?m\.?|pm|PM|P\.?M\.?)/i, // Variación para "a.m." y "p.m."
       /(\d+):(\d+)\s*(am|pm|AM|PM)/i, // Otra variación para am/pm sin puntos
+      /^(\d{1,2}):(\d{2})$/ // Formato 24 horas sin periodo
     ];
 
     for (var dato of elementos) {
       if (bgMatches(dato, color)) {
-        const timeText = dato
-          .querySelector(".fc-event-time")
-          ?.textContent.trim();
+        const timeText = (
+          dato.querySelector(".fc-event-time") ||
+          dato.querySelector(".fc-time") ||
+          dato.querySelector(".fc-event-title-container")
+        )?.textContent.trim();
 
         if (!timeText) {
           console.warn("No se encontró el tiempo para este evento.");
           continue;
         }
 
-        const startTime = timeText.split(" - ")[0];
+        const startTime = timeText.split(" - ")[0].trim();
         let timeMatch = null;
 
         // Intentar hacer match con las expresiones regulares
@@ -170,18 +168,22 @@ function BuscaAusentes() {
         }
 
         if (timeMatch) {
-          const [_, hour, minute, period] = timeMatch;
-          //console.log(            `Cadena descompuesta: ${hour} : ${minute} | Periodo: ${period}`           );
+          const hour = timeMatch[1];
+          const minute = timeMatch[2];
+          const period = timeMatch[3] || "";
 
           let hours = parseInt(hour, 10);
           const minutes = parseInt(minute, 10);
 
-          // Ajustar horas según el período (AM/PM)
-          if (period.toLowerCase().includes("p. m.") && hours < 12) {
-            hours += 12; // Si es "p.m." y la hora es menor que 12, sumamos 12 horas
-          }
-          if (period.toLowerCase().includes("a. m.") && hours === 12) {
-            hours = 0; // Si es "a.m." y la hora es 12, convertimos a medianoche (00:00)
+          // Ajustar horas según el período (AM/PM) si existe
+          if (period) {
+            const pLower = period.toLowerCase();
+            if ((pLower.includes("p. m.") || pLower.includes("pm") || pLower.includes("p.m.")) && hours < 12) {
+              hours += 12;
+            }
+            if ((pLower.includes("a. m.") || pLower.includes("am") || pLower.includes("a.m.")) && hours === 12) {
+              hours = 0;
+            }
           }
 
           const eventTime = new Date(now);
@@ -192,8 +194,8 @@ function BuscaAusentes() {
           const formatTime = (date) => {
             const h = date.getHours();
             const m = date.getMinutes().toString().padStart(2, "0");
-            const period = h >= 12 ? "p.m." : "a.m.";
-            return `${h % 12 || 12}:${m} ${period}`;
+            const periodStr = h >= 12 ? "p.m." : "a.m.";
+            return `${h % 12 || 12}:${m} ${periodStr}`;
           };
 
           const eventTimeFormatted = formatTime(eventTime);
@@ -221,12 +223,11 @@ function BuscaAusentes() {
   }); /// fin de func esperar
 }
 
-// Función para extraer la fecha visible en la pantalla
+// Función para extraer la fecha visible en la pantalla (compatible con múltiples formatos en español y números)
 function extraeFechaEnPantalla() {
-  const titulo = document.querySelector("h2.fc-toolbar-title");
+  const titulo = document.querySelector("h2.fc-toolbar-title") || document.querySelector(".fc-toolbar-title");
   if (!titulo) return null;
-  const fechaTexto = titulo.textContent.trim();
-  //console.log("Fecha original:", fechaTexto);
+  const fechaTexto = titulo.textContent.trim().toLowerCase();
 
   const meses = [
     "enero",
@@ -243,28 +244,45 @@ function extraeFechaEnPantalla() {
     "diciembre",
   ];
 
-  const partesFecha = fechaTexto.split(" de ");
-  //console.log("Partes de la fecha:", partesFecha);
+  // 1. Intentar formato con nombre de mes en texto (ej. "18 de septiembre de 2026" o "viernes, 18 de septiembre de 2026")
+  let mesIndex = -1;
+  for (let i = 0; i < meses.length; i++) {
+    if (fechaTexto.includes(meses[i])) {
+      mesIndex = i;
+      break;
+    }
+  }
 
-  const [dia, mesTexto, anio] = partesFecha;
-  //console.log("Día:", dia);
-  //console.log("Mes extraído:", mesTexto);
-  //console.log("Año:", anio);
+  if (mesIndex !== -1) {
+    const anioMatch = fechaTexto.match(/\b(20\d\d)\b/);
+    const diaMatch = fechaTexto.match(/(\d{1,2})\s+de\s+[a-z]+/i) || fechaTexto.match(/\b(\d{1,2})\b/);
+    if (anioMatch && diaMatch) {
+      const anio = parseInt(anioMatch[1], 10);
+      const dia = parseInt(diaMatch[1], 10);
+      const fecha = new Date(anio, mesIndex, dia);
+      const now = new Date();
+      fecha.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
+      if (!isNaN(fecha.getTime())) {
+        return formatFecha(fecha);
+      }
+    }
+  }
 
-  const mes = meses.indexOf(mesTexto.toLowerCase().trim());
-
-  // console.log("Índice del mes:", mes);
-
-  if (mes === -1) {
-    console.error("Mes no válido");
-  } else {
+  // 2. Intentar formato numérico DD/MM/YYYY o YYYY-MM-DD
+  const slashMatch = fechaTexto.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](20\d\d)/);
+  if (slashMatch) {
+    const dia = parseInt(slashMatch[1], 10);
+    const mes = parseInt(slashMatch[2], 10) - 1;
+    const anio = parseInt(slashMatch[3], 10);
     const fecha = new Date(anio, mes, dia);
     const now = new Date();
-    fecha.setHours(now.getHours(), now.getMinutes(), now.getSeconds()); // Establece la hora actual
-
-    //console.log("Fecha con hora actual:", formatFecha(fecha));
-    return formatFecha(fecha);
+    fecha.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
+    if (!isNaN(fecha.getTime())) {
+      return formatFecha(fecha);
+    }
   }
+
+  return null;
 }
 
 // Función para formatear la fecha en formato "YYYY-MM-DD HH:mm:ss"

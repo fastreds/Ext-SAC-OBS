@@ -171,66 +171,116 @@ function extraerDatosDeExpediente(doc) {
   };
 
   try {
-    // Buscar contenedor que parezca un expediente
-    const containers = doc.querySelectorAll(
-      '.card, .card-body, .portlet, .portlet-body, #demographics, #patient_summary, .patient-card, .tab-pane.active'
-    );
+    const rootElem = (doc.nodeType === 9) ? (doc.body || doc.documentElement || doc) : doc;
+    const rootText = (rootElem && rootElem.textContent) ? rootElem.textContent : "";
 
-    let searchRoot = null;
-    for (const c of containers) {
-      const text = c.textContent.toLowerCase();
-      if ((text.includes("identificación") || text.includes("identificacion") || text.includes("cédula") || text.includes("cedula") || text.includes("carné") || text.includes("expediente")) &&
-          (text.includes("nacimiento") || text.includes("edad") || text.includes("sexo") || text.includes("género") || text.includes("genero"))) {
-        searchRoot = c;
-        break;
+    // 0. Detección en encabezado de expediente ("Expediente Médico - ROJAS ROJAS, MELANY DANIELA (208460878)")
+    try {
+      const headerElements = Array.from(rootElem.querySelectorAll('h1, h2, h3, h4, h5, .page-title, .card-title, header, div, span'));
+      for (const el of headerElements) {
+        const txt = el.textContent ? el.textContent.trim() : "";
+        if (/expediente\s+m[eé]dico\s*-\s*[A-Za-z]/i.test(txt)) {
+          const m = txt.match(/expediente\s+m[eé]dico\s*-\s*([^()]+?)(?:\s*\(([A-Za-z0-9\-]+)\))?(?:\s*$|\s*\n)/i);
+          if (m) {
+            const rawName = m[1].trim();
+            if (rawName.includes(',')) {
+              const [apellidos, nombres] = rawName.split(',').map(s => s.trim());
+              const apParts = apellidos.split(/\s+/);
+              resultado.primerApellido = apParts[0] || "";
+              resultado.segundoApellido = apParts.slice(1).join(" ") || "";
+              resultado.nombre = nombres || "";
+            } else {
+              const parts = rawName.split(/\s+/);
+              if (parts.length >= 3) {
+                resultado.primerApellido = parts[0];
+                resultado.segundoApellido = parts[1];
+                resultado.nombre = parts.slice(2).join(' ');
+              } else if (parts.length === 2) {
+                resultado.primerApellido = parts[0];
+                resultado.nombre = parts[1];
+              } else {
+                resultado.nombre = rawName;
+              }
+            }
+            resultado.firstSurname = resultado.primerApellido;
+            resultado.secondSurname = resultado.segundoApellido;
+            resultado.firstName = resultado.nombre;
+            resultado.fullName = `${resultado.primerApellido} ${resultado.segundoApellido} ${resultado.nombre}`.trim();
+            resultado.nombreCompleto = resultado.fullName;
+            if (m[2] && esIdentificacionValida(m[2])) {
+              resultado.cedula = m[2].trim();
+            }
+            break;
+          }
+        }
+      }
+    } catch (errHeader) {}
+
+    // 1. Buscar contenedor del expediente (priorizando .card-body.pt-4 de v7.5.2)
+    let searchRoot = rootElem.querySelector('.card-body.pt-4') || rootElem.querySelector('#demographics');
+
+    if (!searchRoot) {
+      const candidateContainers = rootElem.querySelectorAll(
+        '.card, .card-body, .portlet, .portlet-body, #demographics, #patient_summary, .patient-card, .tab-pane.active, .aside, .sidebar, #kt_aside, [class*="patient"]'
+      );
+      for (const c of candidateContainers) {
+        const text = (c.textContent || "").toLowerCase();
+        const hasId = text.includes("identificación") || text.includes("identificacion") || text.includes("cédula") || text.includes("cedula") || text.includes("carné") || text.includes("carne");
+        const hasOther = text.includes("fec nac") || text.includes("fec. nac") || text.includes("nacimiento") || text.includes("f. nac") || text.includes("sexo") || text.includes("género") || text.includes("genero") || text.includes("edad");
+        if (hasId && hasOther) {
+          searchRoot = c;
+          break;
+        }
       }
     }
 
     if (!searchRoot) {
-      // Fallback a card-body o documento entero
-      searchRoot = doc.querySelector('.card-body.pt-4') || doc.querySelector('#demographics') || doc;
+      searchRoot = rootElem;
     }
 
-    // Nombre completo del paciente
-    const fullNameElem = searchRoot.querySelector('.card-label.font-weight-bold.text-dark-75') ||
-                         searchRoot.querySelector('.card-label.font-weight-bolder') ||
-                         searchRoot.querySelector('.card-label') ||
-                         searchRoot.querySelector('.patient-name, #patient_name, #pat_name') ||
-                         searchRoot.querySelector('h3.card-title, h4.card-title, .card-title') ||
-                         searchRoot.querySelector('.text-dark-75');
+    // 2. Nombre completo del paciente (si no vino del encabezado)
+    if (!resultado.fullName) {
+      const fullNameElem = searchRoot.querySelector('.card-label.font-weight-bold.text-dark-75') ||
+                           searchRoot.querySelector('.card-label.font-weight-bolder') ||
+                           searchRoot.querySelector('.card-label') ||
+                           searchRoot.querySelector('.patient-name, #patient_name, #pat_name') ||
+                           searchRoot.querySelector('h3.card-title, h4.card-title, .card-title') ||
+                           searchRoot.querySelector('.text-dark-75');
 
-    const fullName = fullNameElem?.textContent.trim();
-    if (fullName) {
-      const cleanName = fullName.replace(/^(paciente|cliente)\s*:?/i, '').trim();
-      resultado.fullName = cleanName;
-      resultado.nombreCompleto = cleanName;
-      const parts = cleanName.split(/\s+/);
-      if (parts.length >= 3) {
-        resultado.primerApellido = parts[0];
-        resultado.segundoApellido = parts[1];
-        resultado.nombre = parts.slice(2).join(' ');
-        resultado.firstSurname = parts[0];
-        resultado.secondSurname = parts[1];
-        resultado.firstName = parts.slice(2).join(' ');
-      } else if (parts.length === 2) {
-        resultado.primerApellido = parts[0];
-        resultado.nombre = parts[1];
-        resultado.firstSurname = parts[0];
-        resultado.firstName = parts[1];
-      } else {
-        resultado.nombre = cleanName;
-        resultado.firstName = cleanName;
+      const fullName = fullNameElem?.textContent.trim();
+      if (fullName) {
+        const cleanName = fullName.replace(/^(paciente|cliente)\s*:?/i, '').trim();
+        resultado.fullName = cleanName;
+        resultado.nombreCompleto = cleanName;
+        const parts = cleanName.split(/\s+/);
+        if (parts.length >= 3) {
+          resultado.primerApellido = parts[0];
+          resultado.segundoApellido = parts[1];
+          resultado.nombre = parts.slice(2).join(' ');
+          resultado.firstSurname = parts[0];
+          resultado.secondSurname = parts[1];
+          resultado.firstName = parts.slice(2).join(' ');
+        } else if (parts.length === 2) {
+          resultado.primerApellido = parts[0];
+          resultado.nombre = parts[1];
+          resultado.firstSurname = parts[0];
+          resultado.firstName = parts[1];
+        } else {
+          resultado.nombre = cleanName;
+          resultado.firstName = cleanName;
+        }
       }
     }
 
-    // Extracción de campos en items o filas
-    const items = searchRoot.querySelectorAll('.d-flex, tr, .row, dl, div');
+    // 3. Extracción de campos en items o filas del contenedor
+    const items = searchRoot.querySelectorAll('.d-flex, tr, .row, dl, div, p, li');
     for (const item of items) {
-      const text = item.textContent.trim();
+      const text = item.textContent ? item.textContent.trim() : "";
+      if (!text || text.length > 300) continue;
       const textLower = text.toLowerCase();
 
-      // 1. Carné (estudiantil o institucional)
-      if (!resultado.carnet && (textLower.includes("carné") || textLower.includes("carne"))) {
+      // Carné (estudiantil o institucional)
+      if (!resultado.carnet && (textLower.includes("carné") || textLower.includes("carne") || textLower.includes("estudiantil"))) {
         const carnetMatch = text.match(/(?:carn[eé]|carn[eé]\s*estudiantil)\s*[:#-]?\s*([A-Za-z0-9\-]+)/i) ||
                             text.match(/\b([A-Za-z]\d{5})\b/);
         if (carnetMatch && esIdentificacionValida(carnetMatch[1])) {
@@ -239,7 +289,7 @@ function extraerDatosDeExpediente(doc) {
         }
       }
 
-      // 2. Cédula / Identificación nacional
+      // Cédula / Identificación nacional
       if (!resultado.cedula && (textLower.includes("cédula") || textLower.includes("cedula") || textLower.includes("identificación") || textLower.includes("identificacion"))) {
         const labelMatch = text.match(/(?:c[eé]dula|identificaci[oó]n|nhc|documento)\s*[:#-]?\s*([A-Za-z0-9\-]+)/i);
         if (labelMatch && esIdentificacionValida(labelMatch[1])) {
@@ -247,7 +297,7 @@ function extraerDatosDeExpediente(doc) {
         }
 
         if (!resultado.cedula) {
-          const valEl = item.querySelector('.text-muted, dd, td:last-child');
+          const valEl = item.querySelector('.text-muted, dd, td:last-child, span');
           const valText = valEl ? valEl.textContent.trim() : "";
           if (esIdentificacionValida(valText)) {
             resultado.cedula = valText;
@@ -255,7 +305,7 @@ function extraerDatosDeExpediente(doc) {
         }
       }
 
-      // 3. Formato cédula costarricense (9 dígitos o con guiones)
+      // Formato cédula costarricense (9 dígitos o con guiones)
       if (!resultado.cedula) {
         const crMatch = text.match(/\b([1-9]\d{8})\b/) || text.match(/\b([1-9]-\d{4}-\d{4})\b/);
         if (crMatch && esIdentificacionValida(crMatch[1])) {
@@ -263,8 +313,8 @@ function extraerDatosDeExpediente(doc) {
         }
       }
 
-      // Fecha de nacimiento
-      if (!resultado.birthDate && (textLower.includes("nacimiento") || textLower.includes("f. nac") || textLower.includes("dob"))) {
+      // Fecha de nacimiento (soporta "Fec Nac", "Fec. Nac", "Nacimiento", "DOB")
+      if (!resultado.birthDate && (textLower.includes("fec nac") || textLower.includes("fec. nac") || textLower.includes("nacimiento") || textLower.includes("f. nac") || textLower.includes("dob") || textLower.includes("fec"))) {
         const m = text.match(/\b\d{1,2}\/\d{1,2}\/\d{4}\b/);
         if (m) resultado.birthDate = m[0];
       }
@@ -279,7 +329,7 @@ function extraerDatosDeExpediente(doc) {
       }
 
       // Teléfono / Celular
-      if (!resultado.phone && (textLower.includes("tel") || textLower.includes("celular") || textLower.includes("movil"))) {
+      if (!resultado.phone && (textLower.includes("tel") || textLower.includes("celular") || textLower.includes("movil") || textLower.includes("cel"))) {
         const m = text.match(/\b[24678]\d{3}[-\s]?\d{4}\b/) || text.match(/\b\d{8,10}\b/);
         if (m) resultado.phone = m[0].replace(/\s+/g, '');
       }
@@ -289,22 +339,55 @@ function extraerDatosDeExpediente(doc) {
         const m = text.match(/[\w.%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
         if (m) resultado.email = m[0];
       }
+
+      // Dirección
+      if (!resultado.address && (textLower.includes("direcci") || textLower.includes("direccion") || textLower.includes("dirección"))) {
+        const dirMatch = text.match(/direcci[oó]n\s*[:#-]?\s*([^,\n\r]+(?:,[^,\n\r]+)*)/i);
+        if (dirMatch && dirMatch[1].trim().length > 3) {
+          resultado.address = dirMatch[1].trim();
+        }
+      }
     }
 
-    // Fallbacks en searchRoot si algún dato no se extrajo
+    // 4. Fallback específico de versión 7.5.2 (clases .text-muted en contenedor)
+    const mutedElements = searchRoot.querySelectorAll('.text-muted, [class*="text-muted"]');
+    if (mutedElements.length > 0) {
+      if (!resultado.cedula && mutedElements[0]) {
+        const val = mutedElements[0].textContent.trim();
+        if (esIdentificacionValida(val)) resultado.cedula = val;
+      }
+      if (!resultado.birthDate) {
+        for (const el of mutedElements) {
+          const m = el.textContent.match(/\b\d{1,2}\/\d{1,2}\/\d{4}\b/);
+          if (m) { resultado.birthDate = m[0]; break; }
+        }
+      }
+      if (!resultado.gender) {
+        for (const el of mutedElements) {
+          const txt = el.textContent.trim().toLowerCase();
+          if (txt === "femenino" || txt === "masculino") {
+            resultado.gender = txt === "femenino" ? "Femenino" : "Masculino";
+            break;
+          }
+        }
+      }
+    }
+
+    // 5. Fallbacks globales con texto seguro (garantizado nunca null)
+    const safeText = (searchRoot.textContent || rootText || "");
+
     if (!resultado.cedula) {
-      const crMatch = searchRoot.textContent.match(/(?:c[eé]dula|identificaci[oó]n)\s*[:#-]?\s*([A-Za-z0-9\-]+)/i) ||
-                      searchRoot.textContent.match(/\b([1-9]\d{8})\b/) ||
-                      searchRoot.textContent.match(/\b([1-9]-\d{4}-\d{4})\b/) ||
-                      searchRoot.textContent.match(/\b(\d{9,12})\b/);
+      const crMatch = safeText.match(/(?:c[eé]dula|identificaci[oó]n)\s*[:#-]?\s*([A-Za-z0-9\-]+)/i) ||
+                      safeText.match(/\b([1-9]\d{8})\b/) ||
+                      safeText.match(/\b([1-9]-\d{4}-\d{4})\b/);
       if (crMatch && esIdentificacionValida(crMatch[1])) {
         resultado.cedula = crMatch[1];
       }
     }
 
     if (!resultado.carnet) {
-      const carnetMatch = searchRoot.textContent.match(/carn[eé](?:\s+estudiantil)?\s*[:#-]?\s*([A-Za-z0-9\-]+)/i) ||
-                          searchRoot.textContent.match(/\b([A-Za-z]\d{5})\b/);
+      const carnetMatch = safeText.match(/carn[eé](?:\s+estudiantil)?\s*[:#-]?\s*([A-Za-z0-9\-]+)/i) ||
+                          safeText.match(/\b([A-Za-z]\d{5})\b/);
       if (carnetMatch && esIdentificacionValida(carnetMatch[1])) {
         resultado.carnet = carnetMatch[1];
         resultado.studentCard = resultado.carnet;
@@ -312,18 +395,16 @@ function extraerDatosDeExpediente(doc) {
     }
 
     if (!resultado.birthDate) {
-      const m = searchRoot.textContent.match(/\b\d{2}\/\d{2}\/\d{4}\b/);
+      const m = safeText.match(/\b\d{2}\/\d{2}\/\d{4}\b/);
       if (m) resultado.birthDate = m[0];
     }
     if (!resultado.email) {
-      const m = searchRoot.textContent.match(/[\w.%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
+      const m = safeText.match(/[\w.%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
       if (m) resultado.email = m[0];
     }
-    if (!resultado.cedula) {
-      const possibleId = searchRoot.querySelector('.d-flex.align-items-center.justify-content-between span.text-muted')?.textContent.trim() || "";
-      if (esIdentificacionValida(possibleId)) {
-        resultado.cedula = possibleId;
-      }
+    if (!resultado.phone) {
+      const m = safeText.match(/\b[24678]\d{3}[-\s]?\d{4}\b/);
+      if (m) resultado.phone = m[0].replace(/\s+/g, '');
     }
 
     // Unificar campos
@@ -523,10 +604,14 @@ document.addEventListener("click", (e) => {
 
 // Auto-captura al cargar la página si es un expediente
 function intentarAutoExtraccion() {
-  const datos = buscarYExtraerDatosPaciente(document);
-  if (datos && esDatoPacienteValido(datos)) {
-    guardarDatosPaciente(datos);
-    console.log("[Ext-SAC-OBS] Auto-captura de expediente al cargar:", datos);
+  try {
+    const datos = buscarYExtraerDatosPaciente(document);
+    if (datos && esDatoPacienteValido(datos)) {
+      guardarDatosPaciente(datos);
+      console.log("[Ext-SAC-OBS] Auto-captura de expediente al cargar:", datos);
+    }
+  } catch (e) {
+    console.warn("[Ext-SAC-OBS] Error en intentarAutoExtraccion:", e);
   }
 }
 setTimeout(intentarAutoExtraccion, 1200);
@@ -536,14 +621,28 @@ setTimeout(intentarAutoExtraccion, 3500);
 function guardarDatosPaciente(datosPaciente) {
   if (!esDatoPacienteValido(datosPaciente)) return;
 
-  chrome.storage.local.get("AAE_EXT_SAC", (result) => {
-    const AAE_EXT_SAC = result.AAE_EXT_SAC || { ExtracDatos: { infoCliente: [] } };
-    AAE_EXT_SAC.ExtracDatos = AAE_EXT_SAC.ExtracDatos || {};
-    AAE_EXT_SAC.ExtracDatos.infoCliente = [datosPaciente];
-    chrome.storage.local.set({ AAE_EXT_SAC }, () => {
-      console.log('[Ext-SAC-OBS] Datos guardados en infoCliente:', datosPaciente);
+  try {
+    if (typeof chrome === "undefined" || !chrome.runtime || !chrome.runtime.id || !chrome.storage || !chrome.storage.local) {
+      console.warn("[Ext-SAC-OBS] Contexto de extensión no disponible para guardar en storage.");
+      return;
+    }
+    chrome.storage.local.get("AAE_EXT_SAC", (result) => {
+      if (chrome.runtime?.lastError) {
+        console.warn("[Ext-SAC-OBS] Error al leer storage:", chrome.runtime.lastError);
+        return;
+      }
+      const AAE_EXT_SAC = result?.AAE_EXT_SAC || { ExtracDatos: { infoCliente: [] } };
+      AAE_EXT_SAC.ExtracDatos = AAE_EXT_SAC.ExtracDatos || {};
+      AAE_EXT_SAC.ExtracDatos.infoCliente = [datosPaciente];
+      chrome.storage.local.set({ AAE_EXT_SAC }, () => {
+        if (!chrome.runtime?.lastError) {
+          console.log('[Ext-SAC-OBS] Datos guardados en infoCliente:', datosPaciente);
+        }
+      });
     });
-  });
+  } catch (err) {
+    console.warn("[Ext-SAC-OBS] Error en guardarDatosPaciente:", err);
+  }
 }
 
 // Función precisa para encontrar el input de Fecha de Nacimiento sin confundirlo con Fecha de Defunción

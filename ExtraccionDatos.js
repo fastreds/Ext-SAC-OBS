@@ -135,8 +135,11 @@ function extraerDatosDeAgenda(popoverContainer) {
     segundoApellido: secondSurname,
     firstName: firstName,
     nombre: firstName,
+    cedula: id,
     patientID: id,
-    identityCard: studentCard || id,
+    carnet: studentCard,
+    studentCard: studentCard,
+    identityCard: id || studentCard,
     birthDate: dobitrhday,
     phone: phone,
     email: email
@@ -156,6 +159,9 @@ function extraerDatosDeExpediente(doc) {
     segundoApellido: "",
     firstName: "",
     nombre: "",
+    cedula: "",
+    carnet: "",
+    studentCard: "",
     patientID: "",
     identityCard: "",
     gender: "",
@@ -223,35 +229,37 @@ function extraerDatosDeExpediente(doc) {
       const text = item.textContent.trim();
       const textLower = text.toLowerCase();
 
-      // Cédula / Identificación / Carné
-      if (!resultado.identityCard && (textLower.includes("cédula") || textLower.includes("cedula") || textLower.includes("carné") || textLower.includes("carne") || textLower.includes("identificación") || textLower.includes("identificacion"))) {
-        // Prioridad 1: Regex buscando el valor tras la etiqueta
-        const labelMatch = text.match(/(?:identificaci[oó]n|c[eé]dula|carn[eé]|documento|nhc|external\s*id)\s*[:#-]?\s*([A-Za-z0-9\-]+)/i);
+      // 1. Carné (estudiantil o institucional)
+      if (!resultado.carnet && (textLower.includes("carné") || textLower.includes("carne"))) {
+        const carnetMatch = text.match(/(?:carn[eé]|carn[eé]\s*estudiantil)\s*[:#-]?\s*([A-Za-z0-9\-]+)/i) ||
+                            text.match(/\b([A-Za-z]\d{5})\b/);
+        if (carnetMatch && esIdentificacionValida(carnetMatch[1])) {
+          resultado.carnet = carnetMatch[1].trim();
+          resultado.studentCard = resultado.carnet;
+        }
+      }
+
+      // 2. Cédula / Identificación nacional
+      if (!resultado.cedula && (textLower.includes("cédula") || textLower.includes("cedula") || textLower.includes("identificación") || textLower.includes("identificacion"))) {
+        const labelMatch = text.match(/(?:c[eé]dula|identificaci[oó]n|nhc|documento)\s*[:#-]?\s*([A-Za-z0-9\-]+)/i);
         if (labelMatch && esIdentificacionValida(labelMatch[1])) {
-          resultado.identityCard = labelMatch[1].trim();
-          if (!resultado.patientID) resultado.patientID = resultado.identityCard;
+          resultado.cedula = labelMatch[1].trim();
         }
 
-        // Prioridad 2: Elemento hijo con el valor (.text-muted, dd, td)
-        if (!resultado.identityCard) {
+        if (!resultado.cedula) {
           const valEl = item.querySelector('.text-muted, dd, td:last-child');
           const valText = valEl ? valEl.textContent.trim() : "";
           if (esIdentificacionValida(valText)) {
-            resultado.identityCard = valText;
-            if (!resultado.patientID) resultado.patientID = valText;
+            resultado.cedula = valText;
           }
         }
+      }
 
-        // Prioridad 3: Formato de cédula costarricense (9 dígitos o con guiones) o carné UCR
-        if (!resultado.identityCard) {
-          const crMatch = text.match(/\b([1-9]\d{8})\b/) || 
-                          text.match(/\b([1-9]-\d{4}-\d{4})\b/) || 
-                          text.match(/\b([A-Za-z]\d{5})\b/) ||
-                          text.match(/\b(\d{9,12})\b/);
-          if (crMatch && esIdentificacionValida(crMatch[1])) {
-            resultado.identityCard = crMatch[1];
-            if (!resultado.patientID) resultado.patientID = crMatch[1];
-          }
+      // 3. Formato cédula costarricense (9 dígitos o con guiones)
+      if (!resultado.cedula) {
+        const crMatch = text.match(/\b([1-9]\d{8})\b/) || text.match(/\b([1-9]-\d{4}-\d{4})\b/);
+        if (crMatch && esIdentificacionValida(crMatch[1])) {
+          resultado.cedula = crMatch[1];
         }
       }
 
@@ -283,16 +291,23 @@ function extraerDatosDeExpediente(doc) {
       }
     }
 
-    // Fallbacks si algún dato no se extrajo
-    if (!resultado.identityCard) {
-      const crMatch = searchRoot.textContent.match(/(?:identificaci[oó]n|c[eé]dula|carn[eé])\s*[:#-]?\s*([A-Za-z0-9\-]+)/i) ||
+    // Fallbacks en searchRoot si algún dato no se extrajo
+    if (!resultado.cedula) {
+      const crMatch = searchRoot.textContent.match(/(?:c[eé]dula|identificaci[oó]n)\s*[:#-]?\s*([A-Za-z0-9\-]+)/i) ||
                       searchRoot.textContent.match(/\b([1-9]\d{8})\b/) ||
                       searchRoot.textContent.match(/\b([1-9]-\d{4}-\d{4})\b/) ||
-                      searchRoot.textContent.match(/\b([A-Za-z]\d{5})\b/) ||
                       searchRoot.textContent.match(/\b(\d{9,12})\b/);
       if (crMatch && esIdentificacionValida(crMatch[1])) {
-        resultado.identityCard = crMatch[1];
-        if (!resultado.patientID) resultado.patientID = crMatch[1];
+        resultado.cedula = crMatch[1];
+      }
+    }
+
+    if (!resultado.carnet) {
+      const carnetMatch = searchRoot.textContent.match(/carn[eé](?:\s+estudiantil)?\s*[:#-]?\s*([A-Za-z0-9\-]+)/i) ||
+                          searchRoot.textContent.match(/\b([A-Za-z]\d{5})\b/);
+      if (carnetMatch && esIdentificacionValida(carnetMatch[1])) {
+        resultado.carnet = carnetMatch[1];
+        resultado.studentCard = resultado.carnet;
       }
     }
 
@@ -304,18 +319,17 @@ function extraerDatosDeExpediente(doc) {
       const m = searchRoot.textContent.match(/[\w.%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
       if (m) resultado.email = m[0];
     }
-    if (!resultado.patientID) {
+    if (!resultado.cedula) {
       const possibleId = searchRoot.querySelector('.d-flex.align-items-center.justify-content-between span.text-muted')?.textContent.trim() || "";
       if (esIdentificacionValida(possibleId)) {
-        resultado.patientID = possibleId;
+        resultado.cedula = possibleId;
       }
     }
-    if (!resultado.patientID && resultado.identityCard) {
-      resultado.patientID = resultado.identityCard;
-    }
-    if (!resultado.identityCard && resultado.patientID) {
-      resultado.identityCard = resultado.patientID;
-    }
+
+    // Unificar campos
+    resultado.patientID = resultado.cedula || resultado.carnet || "";
+    resultado.identityCard = resultado.cedula || resultado.carnet || "";
+    if (!resultado.cedula && resultado.patientID) resultado.cedula = resultado.patientID;
   } catch (e) {
     console.warn("[Ext-SAC-OBS] Error en extracción de expediente:", e);
   }
@@ -532,6 +546,46 @@ function guardarDatosPaciente(datosPaciente) {
   });
 }
 
+// Función precisa para encontrar el input de Fecha de Nacimiento sin confundirlo con Fecha de Defunción
+function obtenerInputFechaNacimiento(container) {
+  // 1. Buscar por la etiqueta explícita "Fecha Nacimiento"
+  const labels = container.querySelectorAll('label');
+  for (const lbl of labels) {
+    const txt = lbl.textContent.trim().toLowerCase();
+    if (txt.includes('nacimiento') && !txt.includes('defunción') && !txt.includes('defuncion')) {
+      let sib = lbl.nextElementSibling;
+      while (sib) {
+        const inp = sib.querySelector('input');
+        if (inp && !inp.disabled && !inp.hasAttribute('disabled')) {
+          return inp;
+        }
+        if (sib.tagName === 'INPUT' && !sib.disabled) return sib;
+        sib = sib.nextElementSibling;
+      }
+    }
+  }
+
+  // 2. Si no se encontró por etiqueta, iterar sobre los systelab-datepicker descartando defunción
+  const datepickers = container.querySelectorAll('systelab-datepicker');
+  for (const dp of datepickers) {
+    const parentRow = dp.closest('.row, form, div');
+    const labelInRow = parentRow?.querySelector('label');
+    const labelTxt = labelInRow?.textContent?.toLowerCase() || '';
+    if (labelTxt.includes('defunción') || labelTxt.includes('defuncion')) {
+      continue; // Descartar fecha de defunción
+    }
+    if (dp.querySelector('.is-disabled, .p-calendar-disabled, [disabled]')) {
+      continue; // Descartar datepickers deshabilitados
+    }
+    const inp = dp.querySelector('input');
+    if (inp) return inp;
+  }
+
+  // 3. Fallback al primer datepicker no deshabilitado
+  return container.querySelector('patient-specific-information-panel systelab-datepicker:not(.is-disabled) input:not([disabled])') ||
+         container.querySelector('#dob input');
+}
+
 // Función para exportar datos al formulario de Modulab (activada por el botón de Modulab)
 function exportarDatosAModulab(modulabForm, datosDirectos = null) {
   return new Promise((resolve) => {
@@ -547,9 +601,25 @@ function exportarDatosAModulab(modulabForm, datosDirectos = null) {
       const pNombre = data.nombre || data.firstName || "";
       const pApellido1 = data.primerApellido || data.firstSurname || "";
       const pApellido2 = data.segundoApellido || data.secondSurname || "";
-      const pCedula = (data.identityCard && esIdentificacionValida(data.identityCard)) ? data.identityCard : 
-                      ((data.patientID && esIdentificacionValida(data.patientID)) ? data.patientID : "");
-      const pCarne = data.studentCard || data.carnet || (pCedula && !/^\d{9}$/.test(pCedula) ? pCedula : "") || pCedula;
+
+      // Cédula nacional (9 dígitos, ej: 208260516)
+      let pCedula = "";
+      if (data.cedula && esIdentificacionValida(data.cedula)) {
+        pCedula = data.cedula;
+      } else if (data.patientID && esIdentificacionValida(data.patientID)) {
+        pCedula = data.patientID;
+      } else if (data.identityCard && /\d{9}/.test(data.identityCard)) {
+        pCedula = data.identityCard;
+      } else if (data.identityCard && esIdentificacionValida(data.identityCard)) {
+        pCedula = data.identityCard;
+      }
+
+      // Carné institucional o estudiantil (ej: B11234)
+      let pCarne = data.carnet || data.studentCard || "";
+      if (!pCarne && data.identityCard && /^[A-Za-z]\d{5}$/i.test(data.identityCard.trim())) {
+        pCarne = data.identityCard.trim();
+      }
+
       const pFechaNac = normalizarFecha(data.birthDate);
 
       console.log("[Ext-SAC-OBS] Pegando paciente en Modulab:", { pNombre, pApellido1, pApellido2, pCedula, pCarne, pFechaNac });
@@ -564,13 +634,21 @@ function exportarDatosAModulab(modulabForm, datosDirectos = null) {
       const inputNombre = form.querySelector('#PatientName') || form.querySelector('input[name="PatientName"]');
       if (inputNombre) setValueAndTriggerEvent(inputNombre, pNombre);
 
-      // Nº Carnet (NSSField)
-      const inputCarnet = form.querySelector('#NSSField') || form.querySelector('input[name="NSSField"]');
-      if (inputCarnet) setValueAndTriggerEvent(inputCarnet, pCarne);
-
-      // Cédula / Identificación (ExtIDField)
+      // Cédula (ExtIDField): SIEMPRE se llena con la cédula (ej: 208260516)
       const inputCedula = form.querySelector('#ExtIDField') || form.querySelector('input[name="ExtIDField"]');
-      if (inputCedula) setValueAndTriggerEvent(inputCedula, pCedula);
+      if (inputCedula && pCedula) {
+        setValueAndTriggerEvent(inputCedula, pCedula);
+      }
+
+      // Nº Carnet (NSSField): Solo se llena si hay un carné institucional distinto a la cédula
+      const inputCarnet = form.querySelector('#NSSField') || form.querySelector('input[name="NSSField"]');
+      if (inputCarnet) {
+        if (pCarne && pCarne !== pCedula) {
+          setValueAndTriggerEvent(inputCarnet, pCarne);
+        } else if (pCarne && !pCedula) {
+          setValueAndTriggerEvent(inputCarnet, pCarne);
+        }
+      }
 
       // N° Seguro Social (PatientNHS / NTSField)
       const inputNTS = form.querySelector('#PatientNHS') || form.querySelector('#ntsFocus') || form.querySelector('input[name="NTSField"]');
@@ -618,14 +696,10 @@ function exportarDatosAModulab(modulabForm, datosDirectos = null) {
         }
       }
 
-      // Fecha de Nacimiento (simulación de escritura en el calendario de Javascript)
-      const birthDateInput = form.querySelector('patient-specific-information-panel systelab-datepicker:not(.is-disabled) input:not([disabled])') ||
-                             form.querySelector('patient-specific-information-panel input.p-inputtext:not([disabled])') ||
-                             form.querySelector('systelab-datepicker input.p-inputtext:not([disabled])') ||
-                             form.querySelector('#dob input.p-inputtext') ||
-                             form.querySelector('input.p-inputtext:not([disabled])');
-
+      // Fecha de Nacimiento (aislada de Fecha de Defunción)
+      const birthDateInput = obtenerInputFechaNacimiento(form);
       if (birthDateInput && pFechaNac) {
+        console.log("[Ext-SAC-OBS] Asignando Fecha de Nacimiento:", pFechaNac);
         await simularEntradaFecha(birthDateInput, pFechaNac);
       }
 
@@ -667,12 +741,12 @@ function exportarDatosAModulab(modulabForm, datosDirectos = null) {
         const fName = filterDialog.querySelector('#PatientName, input[name="NombreField"]');
         const fExtId = filterDialog.querySelector('#nhcFocus, input[name="ExtIDField"]');
         const fNss = filterDialog.querySelector('#nssFocus, input[name="NSSField"]');
-        const fDob = filterDialog.querySelector('#dob input.p-inputtext');
+        const fDob = filterDialog.querySelector('#dob input.p-inputtext') || filterDialog.querySelector('#dob input');
 
         if (fExtId && pCedula) setValueAndTriggerEvent(fExtId, pCedula);
         if (fSurname && pApellido1) setValueAndTriggerEvent(fSurname, pApellido1);
         if (fName && pNombre) setValueAndTriggerEvent(fName, pNombre);
-        if (fNss && pCarne) setValueAndTriggerEvent(fNss, pCarne);
+        if (fNss && pCarne && pCarne !== pCedula) setValueAndTriggerEvent(fNss, pCarne);
         if (fDob && pFechaNac) await simularEntradaFecha(fDob, pFechaNac);
       }
 
